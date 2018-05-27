@@ -1,0 +1,30 @@
+<div id="live-chat">
+
+	<header class="clearfix" (click)="showDiv = !showDiv">
+		<div class="" (click)="showDiv = !showDiv">
+			<a (click)="showDiv = !showDiv" class="chat-close">x</a>
+		</div>
+		<h4 style="color: #fff">Demo Chat</h4>
+		<span class="chat-message-counter">3</span>
+	</header>
+	<div class="chat" [ngClass]="{ 'vis': showDiv}">
+		<div #scrollMe style="height: 300px; overflow-y: scroll;">
+			<div class="chats">
+			</div>
+		</div>
+		<div class="panel-footer" style="padding: 0px;">
+			<form #chatForm="ngForm" name="send_message_form" data-id="message-form" style="padding: 12px;">
+				<div class="input-group">
+					<input type="text" class="form-control input-sm" [(ngModel)]="message" name="message" (keydown.enter)="sendMessage(message)" placeholder="Enter your message here.">
+					<span class="input-group-btn">
+						<button class="btn btn-primary btn-sm" type="button"  (click)="sendMessage(message)">
+							<i class="fa fa-paper-plane" aria-hidden="true"></i>
+						</button>
+					</span>
+				</div>
+			</form>
+		</div>
+	</div>
+
+
+</div>

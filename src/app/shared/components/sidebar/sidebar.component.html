@@ -1,0 +1,594 @@
+<!-- loading view -->
+<ngx-loading [show]="loading" [config]="{ backdropBorderRadius: '14px' }"></ngx-loading>
+<!-- sidebar -->
+<nav class="sidebar" [ngClass]="{sidebarPushRight: isActive}">
+    <ul class="list-group">
+        <a routerLink="/dashboard" [routerLinkActive]="['router-link-active']" class="list-group-item"> <i class="fa fa-fw fa fa-home"></i>&nbsp;Home
+        </a>
+        <div class="nested-menu">
+            <a class="list-group-item">
+                <div class="row" style="margin-top: -3px; margin-bottom: -8px;">
+                    <div class="col-9" #intentListView  (click)="addExpandKuClass('pages')" [routerLinkActive]="['router-link-active']">
+                        <i class="fa fa-fw fa-lightbulb-o"></i>&nbsp;Knowledge Unit
+                    </div>
+                    <div class="col-3" style="margin-top: 7px;">
+                        <div class="row">
+                            <div class="col-6">
+                                <label for="file-input">
+                                    <a tooltip="Import">
+                                        <i class="fa fa-upload" style="font-size: 14px;"></i>
+                                    </a>
+                                </label>
+                                <input type="file" onclick="this.value = null" (change)="fileuploaderFileChange($event, modalimportNameChange)" class="file-input hide" name="file-input" hidden id="file-input">
+                            </div>
+                            <div class="col-6" (click)="addKu(modalcreate)" >
+                                <i class="fa fa-plus" style="font-size: 14px;" tooltip="Add" ></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            <li class="nested" [class.expand]="showMenu == 'pages'">
+                <ul class="submenu" *ngFor="let ku of kus; trackBy: trackByKus">
+                    <li>
+                        <div class="nested-menu">
+                            <div class="nested-menu-intent">
+                                <a class="" [class.colorChange]="ku.activeInd == 'N'"(click)=" getIntentByKu(ku);" [routerLinkActive]="['router-link-active']">
+                                    <div class="row" style="margin-left: 20px; margin-bottom: -9px;">
+                                        <div class="col-10" style="margin-top:2px" (click)="addExpandIntentClass(ku.name);">
+                                            {{ku.name}}
+                                        </div>
+                                        <div class="col-2" style="margin-top: -6px;" >
+                                            <a [popover]="popTemplate"  #pop="bs-popover" placement="left" [outsideClick]="true">
+                                                <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </a>
+                                <li class="nested-intent" [class.expand-intent]="showIntent == ku.name" >
+                                    <ul class="submenu-intent" *ngFor="let intent of intents; let odd=odd; let even=even; trackBy: trackByIntents">
+                                        <li>
+                                            <div class="nested-menu-ku" [class.nested-menu-ku-even]="even">
+                                                <a class="" style="margin-left: -22px; text-decoration: none;" [routerLink]="['/mapping', intent.id, ku.id]" [routerLinkActive]="['router-link-active']">
+                                                    <div class="row" style="margin-left: 50px;">
+                                                        <div class="col-10">
+                                                            {{intent.name}}
+                                                        </div>
+                                                        <div class="col-2" style="margin-left: -3px;" (click)="removeIntentModal( deleteIntent, removeIntent, intent)" align="right">
+                                                            <i class="fa fa-trash"></i>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </li>
+        </div>
+        <a [routerLink]="['/re']" [routerLinkActive]="['router-link-active']" class="list-group-item"> <i class="fa fa-fw fa-code"></i>&nbsp;Regular Expression
+        </a>
+        <a [routerLink]="['/settings']" [routerLinkActive]="['router-link-active']" class="list-group-item"> <i class="fa fa-fw fa-cog"></i>&nbsp;Settings
+		    </a>
+    </ul>
+</nav>
+
+<!-- Modals -->
+<div class="">
+    <!-- Side-Bar popover -->
+    <!-- <ng-template #popTemplate>
+        <a class="list-group-item" (click)="deleteConformation(modalKudelete)">Delete</a>
+        <a class="list-group-item" (click)="exportKu(modaldownload)">Export</a>
+        <a class="list-group-item" (click)="editKu(modalUpdateKu)">Rename</a>
+        <a class="list-group-item" (click)="createIntentModal(intentCreateModal)">Create Intent</a>
+        <a class="list-group-item" *ngIf="selectedKu.activeInd == 'Y'" (click)="disableKuWarning(disableKu)">Disable KU</a>
+        <a class="list-group-item" *ngIf="selectedKu.activeInd == 'N'" (click)="enableKuWarning(enableKu)">Enable KU</a>
+    </ng-template> -->
+
+    <!-- <ng-template #popTemplate> tool tip view with icon
+        <a class="list-group-item" (click)="deleteConformation(modalKudelete)" tooltip="Delete" placement="left"> <i class="fa fa-trash popover-fa"></i></a>
+        <a class="list-group-item" (click)="exportKu(modaldownload)" tooltip="Export" placement="left"><i class="fa fa-download popover-fa"></i></a>
+        <a class="list-group-item" (click)="editKu(modalUpdateKu)" tooltip="Rename" placement="left"><i class="fa fa-edit popover-fa"></i></a>
+        <a class="list-group-item" (click)="createIntentModal(intentCreateModal)" tooltip="Intent" placement="left" ><i class="fa fa-plus popover-fa"></i></a>
+        <a class="list-group-item" *ngIf="selectedKu.activeInd == 'Y'" (click)="disableKuWarning(disableKu)" tooltip="Disable" placement="left"  ><i class="fa fa-toggle-on popover-fa"></i></a>
+        <a class="list-group-item" *ngIf="selectedKu.activeInd == 'N'" (click)="enableKuWarning(enableKu)" tooltip="Enable" placement="left" ><i class="fa fa-toggle-off popover-fa"></i></a>
+    </ng-template> -->
+
+    <ng-template #popTemplate>
+        <a class="list-group-item" (click)="createIntentModal(intentCreateModal); pop.hide()"><i class="fa fa-plus popover-fa small-menu"></i><span>Intent</span></a>
+        <a class="list-group-item" *ngIf="selectedKu.activeInd == 'Y'" (click)="disableKuWarning(disableKu); "><i class="fa fa-toggle-on popover-fa small-menu"></i><span>Disable</span></a>
+        <a class="list-group-item" *ngIf="selectedKu.activeInd == 'N'" (click)="enableKuWarning(enableKu); "><i class="fa fa-toggle-off popover-fa small-menu"></i><span>Enable</span></a>
+        <a class="list-group-item" (click)="editKu(modalUpdateKu); "><i class="fa fa-edit popover-fa small-menu"></i><span>Rename</span></a>
+        <a class="list-group-item" (click)="exportKu(modaldownload); "><i class="fa fa-download popover-fa small-menu"></i><span>Export</span></a>
+        <a class="list-group-item" (click)="deleteConformation(modalKudelete);"><i class="fa fa-trash popover-fa small-menu"></i><span>Delete</span></a>
+    </ng-template>
+
+    <!--  removeIntentModal Intent-->
+    <ng-template #deleteIntent let-c="close" let-d="dismiss" id="removeIntentModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" (click)="d('Cross click')" aria-hidden="true">x</button>
+                    <h4>Are you sure you want to delete this Intent?</h4>
+                </div>
+                <div class="modal-footer">
+                    <a href="javascript:;" class="btn btn-sm btn-danger" (click)="deleteIntents()">Yes</a>
+                    <a href="javascript:;" class="btn btn-sm btn-white" (click)="closeModal()">No</a>
+
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!--  Delete Intent-->
+    <ng-template #removeIntent let-c="close" let-d="dismiss" id="removeIntentModal">
+        <div class="modal-dialog local-modal-dialogue">
+            <div class="modal-content">
+                <div class="modal-header local-modal-header">
+                    <h1 class="modal-title">Delete Intent</h1>
+                </div>
+                <div class="modal-body local-modal-body">
+                    <label class="col control-label modalcontent ">
+                      Deleting Intent will delete all items associated in its Mappings.
+                      Are you sure you want to delete this Intent?
+
+                    </label>
+                </div>
+                <div class="modal-footer local-modal-footer" style="padding-right: 6px">
+                    <a href="javascript:;" class="btn btn-sm btn-danger" (click)="removeIntents()">Yes</a>
+                    <a href="javascript:;" class="btn btn-sm btn-white" (click)="closeModal()">No</a>
+
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- Create Intent -->
+    <ng-template #intentCreateModal let-c="close" let-d="dismiss" novalidate>
+        <div id="intentCreateModal" *ngIf="enableArabicLang">
+            <div class="modal-dialog local-modal-dialogue">
+                <div class="modal-content">
+                    <form #intentCreateForm="ngForm" (ngSubmit)="createIntent(intent);">
+                        <div class="modal-header local-modal-content-header">
+                            <h1 class="modal-title">Create Intent</h1>
+                        </div>
+                        <div class="modal-body local-modal-content-body">
+                          <tabset>
+        										<div class="" style="margin-top: -28px; margin-left: 115px;">
+                              <i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="createIntentLangWarning" tooltip="Some Contents is Missing in Arabic"  placement="right" triggers="mouseenter:mouseleave"></i>
+        											<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0"  *ngIf="!createIntentLangWarning"></i>
+        										</div>
+        										<tab heading='English' style="border: 1px solid #d0cfcf;">
+                              <div class="modal-body local-modal-content-body">
+                                <div class="col-md-12  btm-margin">
+                                    <div class="row ">
+                                        <div class="col-12">
+                                            <label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Intent Name<span style="color: red">*</span></label>
+                                        </div>
+                                        <div class="col-12">
+                                            <input type="text" class="form-control" maxlength="25" placeholder="Intent Name" style="margin-top: 8px; font-size: 10pt;" name="intentName" id="intentName" #intentName="ngModel" [(ngModel)]="intent.name" pattern="^[a-zA-Z0-9][A-Za-z0-9 ]*$" required autocomplete="off"
+                                              trim="blur" (focusout)="checkArabicCreateIntent()">
+                                            <div *ngIf="intentName.errors && (intentName.dirty)">
+                                                <div [hidden]="!intentName.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Intent name required.</div>
+                                                <div [hidden]="!intentName.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Intent name can have only letters numbers or a Space.</div>
+                                                <div [hidden]="!intentName.errors.maxlength" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Intent name can have only 25 letters</div>
+                                            </div>
+                                            <label class="control-label" style="margin-top: 2px;">Intent name will be added as Positive keyword</label>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                  <div class="col-md-12  btm-margin">
+                                      <div class="form-group">
+                                          <label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Positive Keywords
+                                          </label>
+                                          <div class="col">
+                                              <tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" style="font-size: 10pt; font-family:Helvetica Neue; max-width:424px;" placeholder="Enter Positive Keywords" [errorMessages]="errorMessages" [validators]="validators" [allowDupes]="false"
+                                                [(ngModel)]='postKeys' name="posKeywords" secondaryPlaceholder="Enter Positive Keywords" (onAdd)="createPosKeyword($event); checkArabicCreateIntent();" [onAdding]="changeTagOnAdding" (onRemove)="sliceKeywordFromList($event); checkArabicCreateIntent();" #tagInput></tag-input>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <div class="col-md-12  btm-margin">
+                                      <div class="form-group">
+                                          <label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Negative Keywords
+                                          </label>
+                                          <div class="col">
+                                              <tag-input theme='dark' [addOnBlur]="true" [clearOnBlur]="true" style="font-size: 10pt; font-family:Helvetica Neue; max-width:424px;" [(ngModel)]='negaKeys' name="negKeywords" [errorMessages]="errorMessages" placeholder="Enter Negative Keywords" [validators]="validators"
+                                                secondaryPlaceholder="Enter Negative Keywords" (onAdd)="createNegKeyword($event); checkArabicCreateIntent();" [onAdding]="changeTagOnAdding" (onRemove)="sliceKeywordFromList($event); checkArabicCreateIntent()"></tag-input>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                            </tab>
+                            <tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+                              <div class="modal-body local-modal-content-body">
+                                  <div class="col-md-12  btm-margin">
+                                      <div class="row ">
+                                          <div class="col-12">
+                                            <label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Intent Name<span style="color: red">*</span></label>
+                                              <input type="text" class="form-control" placeholder="Intent Name" style="margin-top: 8px; font-size: 10pt;" name="intentArabicName" id="intentArabicName" #intentArabicName="ngModel" [(ngModel)]="intent.arabicName" pattern="^(?:[0-9\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDCF\uFDF0-\uFDFF\uFE70-\uFEFF]|(?:\uD802[\uDE60-\uDE9F]|\uD83B[\uDE00-\uDEFF])){0,50}$"
+                                                trim="blur" (focusout)="checkArabicCreateIntent()" autocomplete="off">
+                                              <div *ngIf="intentArabicName.errors && (intentArabicName.dirty)">
+                                                  <div [hidden]="!intentArabicName.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Intent name can have only letters numbers or a Space.</div>
+                                                  <div [hidden]="!intentArabicName.errors.maxlength" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Intent name can have only 25 letters</div>
+                                              </div>
+                                              <label class="control-label" style="margin-top: 2px;">Intent name will be added as Positive keyword</label>
+                                          </div>
+
+                                      </div>
+                                  </div>
+                                  <div class="col-md-12  btm-margin">
+                                      <div class="form-group">
+                                          <label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Positive Keywords
+                                          </label>
+                                          <div class="col">
+                                              <tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" style="font-size: 10pt; font-family:Helvetica Neue;" placeholder="Enter Positive Keywords"  [allowDupes]="false" [errorMessages]="arabicErrorMessages" [validators]="arabicValidators"
+                                                [(ngModel)]='arabicPostKeys' name="posKeywords" secondaryPlaceholder="Enter Positive Keywords" (onAdd)="createArabicPosKeyword($event); checkArabicCreateIntent();" [onAdding]="changeTagOnAdding" (onRemove)="sliceKeywordFromList($event); checkArabicCreateIntent();" #tagInput></tag-input>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <div class="col-md-12  btm-margin">
+                                      <div class="form-group">
+                                          <label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Negative Keywords
+                                          </label>
+                                          <div class="col">
+                                              <tag-input theme='dark' [addOnBlur]="true" [clearOnBlur]="true" style="font-size: 10pt; font-family:Helvetica Neue;" [(ngModel)]='arabicNegaKeys' name="negKeywords" placeholder="Enter Negative Keywords" [errorMessages]="arabicErrorMessages" [validators]="arabicValidators"
+                                                secondaryPlaceholder="Enter Negative Keywords" (onAdd)="createArabicNegKeyword($event); checkArabicCreateIntent()" [onAdding]="changeTagOnAdding" (onRemove)="sliceKeywordFromList($event); checkArabicCreateIntent();"></tag-input>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                            </tab>
+                          </tabset>
+                        </div>
+                        <div class="modal-footer local-modal-footer" style="padding-right: 6px">
+                            <div class="">
+                                <a href="javascript:;" class="btn btn-md btn-white " style="font-size: 11pt" (click)="d('Cross click')">Cancel</a>
+                                <button type="submit" *ngIf="!loading"  class="btn btn-md btn-primary " style="font-size: 11pt; font-family: Arial;" [disabled]="!intentCreateForm.form.valid">Create</button>
+                                <button *ngIf="loading" class="btn btn-md btn-primary " [disabled]="loading" style="font-size: 11pt; font-family: Arial;"><i class='fa fa-circle-o-notch fa-spin'></i> Processing...</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div id="intentCreateModal" *ngIf="!enableArabicLang">
+            <div class="modal-dialog local-modal-dialogue">
+                <div class="modal-content">
+                    <form #intentCreateForm="ngForm" (ngSubmit)="createIntent(intent);">
+                        <div class="modal-header local-modal-content-header">
+                            <h1 class="modal-title">Create Intent</h1>
+                        </div>
+                        <div class="modal-body local-modal-content-body">
+                            <div class="col-md-12  btm-margin">
+                                <div class="row ">
+                                    <div class="col-12">
+                                      <label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Intent Name<span style="color: red">*</span></label>
+                                        <input type="text" class="form-control" maxlength="25" placeholder="Intent Name" style="margin-top: 8px; font-size: 10pt;" name="intentName" id="intentName" #intentName="ngModel" [(ngModel)]="intent.name" pattern="^[a-zA-Z0-9][A-Za-z0-9 ]*$" required
+                                          trim="blur">
+                                        <div *ngIf="intentName.errors && (intentName.dirty)">
+                                            <div [hidden]="!intentName.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Intent name required.</div>
+                                            <div [hidden]="!intentName.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Intent name can have only letters numbers or a Space.</div>
+                                            <div [hidden]="!intentName.errors.maxlength" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Intent name can have only 25 letters</div>
+                                        </div>
+                                        <label class="control-label" style="margin-top: 2px;">Intent name will be added as Positive keyword</label>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="col-md-12  btm-margin">
+                                <div class="form-group">
+                                    <label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Positive Keywords
+                                    </label>
+                                    <div class="col">
+                                        <tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" style="font-size: 10pt; font-family:Helvetica Neue;" placeholder="Enter Positive Keywords" [errorMessages]="errorMessages" [validators]="validators" [allowDupes]="false"
+                                          [(ngModel)]='postKeys' name="posKeywords" secondaryPlaceholder="Enter Positive Keywords" (onAdd)="createPosKeyword($event)" [onAdding]="changeTagOnAdding" (onRemove)="sliceKeywordFromList($event)" #tagInput></tag-input>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12  btm-margin">
+                                <div class="form-group">
+                                    <label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Negative Keywords
+                                    </label>
+                                    <div class="col">
+                                        <tag-input theme='dark' [addOnBlur]="true" [clearOnBlur]="true" style="font-size: 10pt; font-family:Helvetica Neue;" [(ngModel)]='negaKeys' name="negKeywords" [errorMessages]="errorMessages" placeholder="Enter Negative Keywords" [validators]="validators"
+                                          secondaryPlaceholder="Enter Negative Keywords" (onAdd)="createNegKeyword($event)" [onAdding]="changeTagOnAdding" (onRemove)="sliceKeywordFromList($event)"></tag-input>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer local-modal-footer" style="padding-right: 6px">
+                            <div class="">
+                                <a href="javascript:;" class="btn btn-md btn-white " style="font-size: 11pt" (click)="d('Cross click')">Cancel</a>
+                                <button type="submit" *ngIf="!loading"  class="btn btn-md btn-primary " style="font-size: 11pt; font-family: Arial;" [disabled]="!intentCreateForm.form.valid">Create</button>
+                                <button *ngIf="loading"  class="btn btn-md btn-primary " [disabled]="loading" style="font-size: 11pt; font-family: Arial;"><i class='fa fa-circle-o-notch fa-spin'></i> Processing...</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- Delete Ku -->
+    <ng-template #modalKudelete let-c="close" let-d="dismiss">
+        <div class="modal-dialog local-modal-dialogue">
+            <div class="modal-content">
+                <div class="modal-header local-modal-header">
+                    <!-- <label class="col control-label modalheading ">Delete Entity</label> -->
+                    <h1 class="modal-title">Delete Knowledge Unit</h1>
+                </div>
+                <div class="modal-body local-modal-body">
+                    <label class="col control-label modalcontent " style="max-width: 375px;">Deleting KU will delete all the Intents and all items associated in its Mappings.
+							Are you sure you want to delete this Knowledge Unit?
+
+                    </label>
+                </div>
+                <div class="modal-footer local-modal-footer" style="padding-right: 6px">
+                    <a href="javascript:;" class="btn btn-sm btn-danger" id="kuDelete" (click)="deleteKu()" data-dismiss="modal">Yes</a>
+                    <a href="javascript:;" class="btn btn-sm btn-white" id="kuClose" data-dismiss="modal" (click)="d('Cross click')">No</a>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!--  Enable Ku-->
+    <ng-template #enableKu let-c="close" let-d="dismiss" id="enableKu">
+        <div class="modal-dialog local-modal-dialogue">
+            <div class="modal-content">
+                <div class="modal-header local-modal-header">
+                    <h1 class="modal-title">Enable Knowledge Unit</h1>
+                </div>
+                <div class="modal-body local-modal-body">
+                    <label class="col control-label modalcontent ">
+                      Enabling Knowledge Unit will enable all intent associated in this Knowledge Unit
+                      Are you sure you want to enable this Knowledge Unit?
+
+                    </label>
+                </div>
+                <div class="modal-footer local-modal-footer" style="padding-right: 6px">
+                    <a href="javascript:;" class="btn btn-sm btn-white"  data-dismiss="modal" (click)="d('Cross click')">Cancel</a>
+                    <a href="javascript:;" class="btn btn-md btn-primary" (click)="enableKnowledgeUnit()">Enable</a>
+
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!--  disable Ku-->
+    <ng-template #disableKu let-c="close" let-d="dismiss" id="disableKu">
+        <div class="modal-dialog local-modal-dialogue">
+            <div class="modal-content">
+                <div class="modal-header local-modal-header">
+                    <h1 class="modal-title">Disable Knowledge Unit</h1>
+                </div>
+                <div class="modal-body local-modal-body">
+                    <label class="col control-label modalcontent ">
+                      Disabling Knowledge Unit will disable all intent associated in this Knowledge Unit.
+                      Are you sure you want to disable this Knowledge Unit?
+
+                    </label>
+                </div>
+                <div class="modal-footer local-modal-footer" style="padding-right: 6px">
+                    <a href="javascript:;" class="btn btn-sm btn-white"  data-dismiss="modal" (click)="d('Cross click')">Cancel</a>
+                    <a href="javascript:;" class="btn btn-md btn-primary" (click)="disableKnowledgeUnit()">Disable</a>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!--  Update Ku-->
+    <ng-template #modalUpdateKu let-c="close" let-d="dismiss">
+        <div class="modal-dialog local-modal-dialogue">
+            <div class="modal-content">
+                <form #kuUpdateForm="ngForm" (ngSubmit)="updateKu(uku)">
+                    <div class="modal-header local-modal-content-header">
+                        <h1 class="modal-title">Rename Knowledge Unit</h1>
+                    </div>
+                    <div class="col-md-12 form-group" style="padding-bottom: 10px;">
+                        <div class="row">
+                            <div class="col-4">
+                                <label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Name</label>
+                            </div>
+                            <div class="col-8">
+                                <input type="text" class="form-control" style=" margin-top: 8px; font-size: 10pt; " placeholder="Enter KU Name" name="updatekuName" id="updatekuName" pattern="^[A-Za-z0-9][A-Za-z0-9 ]*$" maxlength="25" #updatekuName="ngModel" [(ngModel)]="uku.name" pattern="^[A-Za-z0-9 ]*$"
+                                  title="Invalid KU" ng-init="$element.focus()" autofocus required>
+                                <div [hidden]="updatekuName.valid || updatekuName.pristine" class="alert alert-danger" style="margin-bottom:0; padding: 0.5rem 1.25rem">KU Name is required</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 form-group" style="padding-bottom: 10px;">
+                        <div class="row">
+                            <div class="col-4">
+                                <label class="col control-label" style=" font-size: 11pt;">Rankable
+                                    <span style="color: red">*</span>
+                                </label>
+                            </div>
+                            <div class="col-8">
+                                 <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" [(ngModel)]="uku.isRankable"id="myonoffswitch" checked>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer local-modal-footer" style="padding-right: 6px">
+                        <a href="javascript:;" class="btn btn-md btn-white " style="font-size: 11pt" (click)="d('Cross click')">Cancel</a>
+                        <button type="submit" class="btn btn-md btn-primary " style="font-size: 11pt; font-family: Arial;" [disabled]="!kuUpdateForm.form.valid">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </ng-template>
+
+    <!--  Create Ku-->
+    <ng-template #modalcreate let-c="close" let-d="dismiss">
+        <div class="modal-dialog local-modal-dialogue">
+            <div class="modal-content">
+                <form #kuForm="ngForm" (ngSubmit)="createKu(ku)" novalidate>
+                    <div class="modal-header local-modal-content-header">
+                        <h1 class="modal-title">Create Knowledge Unit</h1>
+                    </div>
+                    <div class="modal-body">
+                        <div class="col-md-12 form-group" style="padding-bottom: 10px;">
+                            <div class="row">
+                                <div class="col-4">
+                                    <label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Name of the KU
+                                        <span style="color: red">*</span>
+                                    </label>
+                                </div>
+                                <div class="col-8">
+                                    <input type="text" class="form-control" placeholder="Enter KU Name" style="margin-top: 8px; font-size: 10pt;" id="kuName" name="kuName" pattern="^[A-Za-z0-9][A-Za-z0-9 ]*$" maxlength="25" #kuName="ngModel" [(ngModel)]="ku.name" autofocus ng-init="$element.focus()"
+                                      required>
+                                    <div *ngIf="kuName.errors && (kuName.dirty || kuName.dirty)">
+                                        <div [hidden]="kuName.valid || kuName.pristine" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Knowledge Unit name should be only alphanumeric</div>
+                                        <div [hidden]="kuName.dirty || kuName.touched" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Knowledge unit name required.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="col-md-12 form-group" style="padding-bottom: 10px;">
+                            <div class="row">
+                                <div class="col-4">
+                                    <label class="col control-label" style=" font-size: 11pt;">Rankable
+                                    </label>
+                                </div>
+                                <div class="col-8">
+                                     <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" [(ngModel)]="ku.isRankable"id="myonoffswitch" checked>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <div class="modal-footer local-modal-footer" style="padding-right: 6px">
+                        <a href="javascript:;" class="btn btn-md btn-white " style="font-size: 11pt" (click)="d('Cross click')">Cancel</a>
+                        <button type="submit" class="btn btn-md btn-primary " style="font-size: 11pt; font-family: Arial;" [disabled]="!kuForm.form.valid">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- Import Ku-->
+    <ng-template #modalimport let-c="close" let-d="dismiss">
+        <div>
+            <div>
+                <div class="modal-alert">
+                    <div class="modal-dialog">
+                        <!-- <div class="modal-header">
+                            <file-uploader (allowMultiple)="false" (change)="fileuploaderFileChange($event, modalimportNameChange)" (required)="false"></file-uploader>
+                        </div> -->
+                        <div class="modal-footer">
+                            <a href="javascript:;" class="btn btn-sm btn-white" (click)="d('Cross click')">Cancel</a>
+                            <!-- <a href="javascript:;" class="btn btn-sm btn-danger"  data-dismiss="modal">Upload</a> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- Export Ku-->
+    <ng-template #modaldownload let-c="close" let-d="dismiss">
+      <div class="modal-dialog local-modal-dialogue">
+          <div class="modal-content">
+              <div class="modal-header local-modal-header">
+                  <h1 class="modal-title">Export Knowledge Unit</h1>
+              </div>
+              <div class="modal-body local-modal-body" style="text-align: center;">
+                <a href="javascript:;" (click)="downloadKnowledgeUnit()"><i class="fa fa-download  faa-pulse animated fa-4x " style="padding: 20px;"></i></a>
+
+              </div>
+              <div class="modal-footer local-modal-footer" style="padding-right: 6px">
+                  <a href="javascript:;" class="btn btn-sm btn-white"  data-dismiss="modal" (click)="d('Cross click')">Cancel</a>
+              </div>
+          </div>
+      </div>
+    </ng-template>
+
+    <!-- Upload Verification -->
+    <ng-template #modalimportNameChange let-c="close" let-d="dismiss">
+        <div>
+            <div>
+                <div class="modal-dialog local-modal-dialogue">
+                    <div class="modal-content">
+                        <div class="modal-header local-modal-header" style="padding-right:100px">
+                            <div class="modal-title">
+                                <h1 class="">Import Knowledge Unit</h1>
+                                <div class="" *ngIf="viewEditTable">
+                                    <span style="color:red">NOTE: These names are already associated with the other KU. Kindly change the following names.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <form name="form"  #f="ngForm" class="margin-bottom-0">
+                        <div class="modal-body" style="padding-bottom: 0; max-height: 480px; overflow: auto;">
+                          <div class="row" *ngIf="importJsonData.flag" style="width:100%;">
+                              <div class="col-4">
+                                  <label class="col control-label" style="margin-top: 10px; font-size: 11pt; margin-left: -8px;">KU Name</label>
+                              </div>
+                              <div class="col-8">
+                                  <div class="row">
+                                    <input type="text" trim="blur" [(ngModel)]="importJsonData.name" style="margin-top: 8px; font-size: 10pt; margin-bottom: 15px; margin-left: -10px;     width: 103%;"  #ku="ngModel" pattern="^[a-zA-Z0-9][A-Za-z0-9 ]*$" maxlength="25" class="col" [disabled]="!importJsonData.flag" class="form-control"  placeholder="Knowledge Unit Name" (change)="checkImportIntentForm(ku.errors)"
+                                      name="ku" id="ku" />
+                                      <div *ngIf="ku.errors && (ku.dirty || ku.dirty)">
+                                          <div [hidden]="ku.valid || ku.pristine" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Knowledge Unit name should be only alphanumeric</div>
+                                          <div [hidden]="ku.dirty || ku.touched" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Knowledge unit name required.</div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+
+                            <div class="row" *ngIf="viewEditTable">
+                                <div  *ngIf="intentCount != 0" style="width:100%; ">
+                                  <div class=""  style="width:100%; " *ngFor="let intents of importJsonData.intents; let j = index">
+                                    <div style="width:100%; border-top: 1px solid #d6d5d5; padding: 10px 0px 10px 0px;" class="row"  *ngIf="intents.flag">
+                                      <div class="col-4">
+                                          <label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Intent Name</label>
+                                      </div>
+                                      <div class="col-8">
+                                            <div>
+                                              <div class="row" style="margin-bottom: 10px;" *ngFor="let names of intents.names.slice().reverse(); let i = index" >
+                                                <div class="row" style="width: 100%;" *ngIf="names.localeCode == 'en' && names.flag">
+                                                   <input name="fs{{i}}{{j}}" [(ngModel)]="names.name"  trim="blur" required #fs="ngModel" maxlength="25"   class="form-control"  placeholder="new Intent Name" pattern="^[a-zA-Z0-9][A-Za-z0-9 ]*$" />
+                                                  <div *ngIf="fs.errors && (fs.dirty || fs.touched)">
+                                                      <div *ngIf="fs.errors.required" class="alert alert-danger" style="margin-bottom: 0; margin-left: 20px; padding: 0.5rem 1.25rem">Intent name required.</div>
+                                                      <div *ngIf="fs.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; margin-left: 20px;padding: 0.5rem 1.25rem">Intent name can have only letters numbers</div>
+                                                      <div *ngIf="fs.errors.maxlength" class="alert alert-danger" style="margin-bottom: 0;margin-left: 20px;padding: 0.5rem 1.25rem">Intent name can have only 25 letters</div>
+                                                  </div>
+                                                </div>
+                                                <div class="row" style="width: 100%;" *ngIf="names.localeCode == 'ar' && names.flag">
+                                                  <input type="text" [(ngModel)]="names.name" trim="blur" maxlength="25"  class="form-control" style="font-size: 8pt;" placeholder="new Intent Name" #intentArabicName="ngModel" name="intentArabicName{{i}}{{j}}"  pattern="^(?:[0-9\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDCF\uFDF0-\uFDFF\uFE70-\uFEFF]|(?:\uD802[\uDE60-\uDE9F]|\uD83B[\uDE00-\uDEFF])){0,50}$" />
+                                                  <div *ngIf="intentArabicName.errors && (intentArabicName.dirty)">
+                                                    <div *ngIf="intentArabicName.errors.pattern" class="alert alert-danger" style="margin-bottom: 0;margin-left: 20px;padding: 0.5rem 1.25rem">Intent name can have only Arbic letters numbers or a Space.</div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer local-modal-footer" *ngIf="viewEditTable">
+                            <a href="javascript:;" class="btn btn-sm btn-white" (click)="closeModal()">Cancel</a>
+                            <button href="javascript:;" class="btn btn-sm btn-primary" [disabled]="!f.form.valid" (click)="validImportKu(importJsonData, modalimportNameChange)">Save</button>
+                        </div>
+                        <div class="modal-footer local-modal-footer" *ngIf="!viewEditTable">
+                            <a href="javascript:;" class="btn btn-sm btn-white" (click)="closeModal()">Cancel</a>
+                            <button href="javascript:;" class="btn btn-sm btn-primary" [disabled]="!f.form.valid" (click)="saveImportKu(importJsonData)">Save</button>
+                        </div>
+                      </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+</div>

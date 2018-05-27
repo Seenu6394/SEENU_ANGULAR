@@ -1,0 +1,2721 @@
+<!-- loading view -->
+<ngx-loading [show]="loading" [config]="{ backdropBorderRadius: '14px' }"></ngx-loading>
+<!-- contetn view -->
+<div id="content" class="content map-content app-diagram-editor">
+	<!-- Mapping View -->
+	<div class="row">
+		<!-- Mapping View Diagram -->
+		<div class="col-8" *ngIf="selectedIntent; else dummyDiv" style="margin-top: 15px;">
+			<!--Bread Crumb  -->
+			<div class="row">
+				<h1 *ngIf="!selectedKuId" class="page-header" style="margin-left: 7px;">Knowledge Unit</h1>
+				<h1 *ngIf="selectedKu" style="margin-left: 7px;" class="page-header">
+					{{selectedKu.name}} <span *ngIf="selectedIntent"
+						style="margin-left: 1px; margin-right: 1px;">/ </span><span
+						*ngIf="selectedIntent">{{selectedIntent.name}}</span>
+				</h1>
+			</div>
+			<!-- Mapping View  -->
+			<app-diagram-editor [model]="model" (linkDrawn)="onlinkDrawn($event)" (reLinkDrawn)="onReLinkDrawn($event)" (nodeSelected)="showDetails($event)" (layoutCompletd)="onlayoutCompletd($event)" (modelAfterDeleted)="modelAfterDeleted($event)" (modelBeforeDeleted)="onModelDelete($event)"
+			  (modelChanged)="onModelChanged($event)"> </app-diagram-editor>
+		</div>
+		<!-- Mapping View Diagram Template-->
+		<template #dummyDiv id="dummyDiv">
+		<div class="col-8" >
+			<h1 *ngIf="selectedKu" style="margin-left: 7px;" class="page-header">
+				{{selectedKu.name}} <span *ngIf="selectedIntent"
+					style="margin-left: 1px; margin-right: 1px;">/ </span><span
+					*ngIf="selectedIntent">{{selectedIntent.name}}</span>
+			</h1>
+		</div>
+		</template>
+		<!-- Right-Sidebar Views-->
+		<div *ngIf="rightSideView" class="col-4" style="background: #ffffff; margin-top: -15px;">
+			<!--  Intent Div -->
+			<div *ngIf="viewIntent" align="Left" class="subDiv">
+				<div class="row">
+					<div class="col-2 right-sidebar">
+						<ul class="list-group">
+							<a class="list-group-item right-sidebar-icon " tooltip="Intent" placement="left"> <i
+								class="fa fa-fw fa fa-home fa-lg" ></i>
+							</a>
+						</ul>
+						<div class="rightbar"></div>
+					</div>
+					<div class="col-10">
+						<!-- INTENT HEADING TEXT -->
+						<div class="row" style="margin-top: 15px;">
+							<!-- INTENT-->
+							<div class="col-8">
+								<label class="col control-label labelFont ">INTENT</label>
+							</div>
+							<!-- close -->
+							<div class="col-2" align="Right">
+								<a href="javascript:;" class="close-right-view" aria-hidden="true" (click)="closeRightView()">x</a>
+							</div>
+						</div>
+						<!-- heading underline -->
+						<div class="heading-line"></div>
+						<!-- click out side for save data -->
+						<div class="" style="height: -webkit-fill-available; overflow-y: scroll;" (clickOutside)="onClickedOutsideIntent($event, intent, intentName)">
+							<div class="" (click)="onClickedInsideIntent()">
+								<!-- Arabic - English View  -->
+								<div class="col-md-12 side-menu-item-space" *ngIf="enableArabicLang">
+									<tabset>
+										<div class="" style="margin-top: -28px; margin-left: 115px;">
+											<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateIntentLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+											<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateIntentLangWarning"></i>
+										</div>
+										<!-- English Tab View-->
+										<tab heading='English' style="border: 1px solid #d0cfcf;">
+											<div style="padding: 0px;">
+												<!-- Intent -->
+												<div class=" side-menu-item-space">
+													<div class="form-group">
+														<label class="col control-label side-menu-field-header">Name of the
+														 Intent <span style="color: red">*</span></label>
+														<div class="col" id="intenthome">
+															<input type="text" class="form-control side-menu-field-font" pattern="^[a-zA-Z0-9][A-Za-z0-9 ]*$" maxlength="25" placeholder="Intent Name" name="intentName" id="intentName" #intentName="ngModel" [(ngModel)]="intent.name" required trim="blur" (focusout)="checkArabicUpdateIntent()"
+															  (keyup.enter)="onClickedOutsideIntentKey($event, intent, intentName)">
+															<div *ngIf="intentName.errors && (intentName.dirty)">
+																<div [hidden]="!intentName.errors.required" class="alert alert-danger">Intent name required.</div>
+																<div [hidden]="!intentName.errors.pattern" class="alert alert-danger">Intent name can have only letters numbers or a Space.</div>
+															</div>
+														</div>
+													</div>
+												</div>
+												<!-- Positive -->
+												<div class="col side-menu-item-space">
+													<div class="form-group">
+														<label class=" control-label side-menu-field-header">Positive </label>
+														<div class="">
+															<tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" [errorMessages]="errorMessages" [validators]="validators" [(ngModel)]='postKeys' placeholder="Enter Positive Keywords" [onAdding]="changeTagOnAdding" pattern="^[A-Za-z0-9 ]*$" maxlength="25"
+															  name="posKeywords" secondaryPlaceholder="Enter Positive Keywords" class="side-menu-field-font" (onAdd)="updatePosKeyword($event); checkArabicUpdateIntent();" (onRemove)="deleteKeyword($event); checkArabicUpdateIntent();"></tag-input>
+														</div>
+													</div>
+												</div>
+												<!-- Negative -->
+												<div class="col side-menu-item-space">
+													<div class="form-group">
+														<label class=" control-label side-menu-field-header">Negative</label>
+														<div class="">
+															<tag-input [(ngModel)]='negaKeys' [addOnBlur]="true" [clearOnBlur]="true" [errorMessages]="errorMessages" [validators]="validators" theme='dark' placeholder="Enter Negative Keywords" [onAdding]="changeTagOnAdding" pattern="^[A-Za-z0-9 ]*$" maxlength="25"
+															  name="negKeywords" class="side-menu-field-font" secondaryPlaceholder="Enter Negative Keywords" (onAdd)="updateNegKeyword($event); checkArabicUpdateIntent();" (onRemove)="deleteKeyword($event); checkArabicUpdateIntent();"></tag-input>
+														</div>
+													</div>
+												</div>
+											</div>
+										</tab>
+										<!-- Arabic Tab View  -->
+										<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+											<div style="padding: 0px;">
+												<!-- Intent in Arabic  -->
+												<div class=" side-menu-item-space">
+													<div class="form-group">
+														<label class="col control-label side-menu-field-header">Name of the
+														 Intent in Arabic <span style="color: red">*</span></label>
+														<div class="col" id="intenthome">
+															<input type="text" class="form-control side-menu-field-font" pattern="^(?:[0-9\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDCF\uFDF0-\uFDFF\uFE70-\uFEFF]|(?:\uD802[\uDE60-\uDE9F]|\uD83B[\uDE00-\uDEFF])){0,50}$" maxlength="25" placeholder="Intent Name"
+															  name="intentName" id="intentArabicName" #intentArabicName="ngModel" [(ngModel)]="intent.arabicName" trim="blur" (focusout)="checkArabicUpdateIntent()" (keyup.enter)="onClickedOutsideIntentKey($event, intent, intentName)">
+															<div *ngIf="intentArabicName.errors && (intentArabicName.dirty)">
+																<div [hidden]="!intentArabicName.errors.pattern" class="alert alert-danger">Intent name can have only Arbic letters numbers or a Space.</div>
+															</div>
+														</div>
+													</div>
+												</div>
+												<!-- Positive -->
+												<div class=" side-menu-item-space">
+													<div class="form-group">
+														<label class="col control-label side-menu-field-header">Positive </label>
+														<div class="col">
+															<tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" [(ngModel)]='arabicPostKeys' placeholder="Enter Positive Keywords" name="posKeywords" secondaryPlaceholder="Enter Positive Keywords" class="side-menu-field-font" [errorMessages]="arabicErrorMessages"
+															  [validators]="arabicValidators" (onAdd)="updateArabicPosKeyword($event); checkArabicUpdateIntent();" (onRemove)="deleteKeyword($event); checkArabicUpdateIntent();"></tag-input>
+														</div>
+													</div>
+												</div>
+												<!-- Negative -->
+												<div class=" side-menu-item-space">
+													<div class="form-group">
+														<label class="col control-label side-menu-field-header">Negative </label>
+														<div class="col">
+															<tag-input [(ngModel)]='arabicNegaKeys' [addOnBlur]="true" [clearOnBlur]="true" theme='dark' placeholder="Enter Negative Keywords" [onAdding]="changeTagOnAdding" pattern="^[A-Za-z0-9 ]*$" maxlength="25" name="negKeywords" class="side-menu-field-font"
+															  secondaryPlaceholder="Enter Negative Keywords" [errorMessages]="arabicErrorMessages" [validators]="arabicValidators" (onAdd)="updateArabicNegKeyword($event); checkArabicUpdateIntent();" (onRemove)="deleteKeyword($event); checkArabicUpdateIntent();"></tag-input>
+														</div>
+													</div>
+												</div>
+											</div>
+										</tab>
+									</tabset>
+								</div>
+								<!-- English View  -->
+								<div style="padding: 0px;" *ngIf="!enableArabicLang">
+									<!-- Intent -->
+									<div class=" side-menu-item-space">
+										<div class="form-group">
+											<label class="col control-label side-menu-field-header">Name of the
+											 Intent</label>
+											<div class="col" id="intenthome">
+												<input type="text" class="form-control side-menu-field-font" pattern="^[a-zA-Z0-9][A-Za-z0-9 ]*$" maxlength="25" placeholder="Intent Name" name="intentName" id="intentName" #intentName="ngModel" [(ngModel)]="intent.name" required trim="blur" (keyup.enter)="onClickedOutsideIntentKey($event, intent, intentName)">
+												<div *ngIf="intentName.errors && (intentName.dirty)">
+													<div [hidden]="!intentName.errors.required" class="alert alert-danger">Intent name required.</div>
+													<div [hidden]="!intentName.errors.pattern" class="alert alert-danger">Intent name can have only letters numbers or a Space.</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<!-- Positive keywords -->
+									<div class="col side-menu-item-space">
+										<div class="form-group">
+											<label class=" control-label side-menu-field-header">Positive </label>
+											<div class="">
+												<tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" [errorMessages]="errorMessages" [validators]="validators" [(ngModel)]='postKeys' placeholder="Enter Positive Keywords" [onAdding]="changeTagOnAdding" pattern="^[A-Za-z0-9 ]*$" maxlength="25"
+												  name="posKeywords" secondaryPlaceholder="Enter Positive Keywords" class="side-menu-field-font" (onAdd)="updatePosKeyword($event)" (onRemove)="deleteKeyword($event)"></tag-input>
+											</div>
+										</div>
+									</div>
+									<!-- Negative keywords-->
+									<div class="col side-menu-item-space">
+										<div class="form-group">
+											<label class=" control-label side-menu-field-header">Negative </label>
+											<div class="">
+												<tag-input [(ngModel)]='negaKeys' [addOnBlur]="true" [clearOnBlur]="true" [errorMessages]="errorMessages" [validators]="validators" theme='dark' placeholder="Enter Negative Keywords" [onAdding]="changeTagOnAdding" pattern="^[A-Za-z0-9 ]*$" maxlength="25"
+												  name="negKeywords" class="side-menu-field-font" secondaryPlaceholder="Enter Negative Keywords" (onAdd)="updateNegKeyword($event)" (onRemove)="deleteKeyword($event)"></tag-input>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="rightbar"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--  Entity Div -->
+			<div *ngIf="viewEntity" align="Left" class="subDiv">
+				<div class="row">
+					<div class="col-2 right-sidebar">
+						<ul class="list-group">
+							<a href="javascript:;" class="list-group-item right-sidebar-icon" tooltip="Entity" placement="left" (click)="triggerScrollTo('entityhome')">
+								<i class="fa fa-fw fa fa-home fa-lg" ></i>
+							</a>
+							<a href="javascript:;" class="list-group-item right-sidebar-icon" tooltip="RegExs" placement="left" (click)="triggerScrollTo('entityregex')" *ngIf="(entity.entityType == 'GEN')">
+								<i class="fa fa-fw fa-code fa-lg" ></i>
+							</a>
+							<a href="javascript:;" class="list-group-item right-sidebar-icon" tooltip="List" placement="left" (click)="triggerScrollTo('entitylist')" *ngIf="(entity.entityType == 'EILS') || (entity.entityType == 'ELS') || (entity.entityType == 'EQRP')">
+								<i class="fa fa-fw fa-list-ul fa-lg" ></i>
+							</a>
+							<a href="javascript:;" class="list-group-item right-sidebar-icon" tooltip="Error" placement="left" (click)="triggerScrollTo('entityerror')" *ngIf="(entity.entityType == 'EILS') || (entity.entityType == 'ELS') || (entity.entityType == 'EQRP')">
+								<i class="fa fa-fw fa-lightbulb-o fa-lg" ></i>
+							</a>
+							<a href="javascript:;" class="list-group-item right-sidebar-icon" tooltip="Values" placement="left" (click)="triggerScrollTo('entityvalues')" *ngIf="(entity.entityType == 'EILS') || (entity.entityType == 'ELS') || (entity.entityType == 'EQRP')">
+								<i class="fa fa-fw fa-info fa-lg" ></i>
+							</a>
+						</ul>
+						<div class="rightbar"></div>
+					</div>
+					<div class="col-10" (clickOutside)="onClickedOutsideEntity($event, entity)">
+						<!-- ENTITY HEADING TEXT -->
+						<div class="row" style="margin-top: 15px;">
+							<!-- ENTITY -->
+							<div class="col-8">
+								<label class="col control-label labelFont ">ENTITY</label>
+							</div>
+							<!-- close -->
+							<div class="col-2" align="Right">
+								<a href="javascript:;" class="close-right-view" aria-hidden="true" (click)="closeRightView()">x</a>
+							</div>
+						</div>
+						<div class="heading-line"></div>
+						<div class="row" style="height: 100%; overflow-y: scroll;" (click)="onClickedInsideEntity()" (keyup.enter)="onClickedOutsideEntity($event, entity)">
+							<!-- Entity Name -->
+							<div class="col-md-12 side-menu-item-space" id="entityhome">
+								<div class="form-group">
+									<label class="col control-label side-menu-field-header">Name of the Entity <span style="color: red">*</span> </label>
+									<div class="col">
+										<input type="text" class="form-control side-menu-field-font" maxlength="25"  placeholder="Enity Name" name="entityName" id="entityName" #entityName="ngModel" [(ngModel)]="entity.name" required (keyup.enter)="onClickedOutsideEntity($event, entity)">
+										<div *ngIf="entityName.errors && (entityName.dirty)">
+											<div [hidden]="!entityName.errors.required" class="alert alert-danger">Entity name required.</div>
+											<div [hidden]="!entityName.errors.pattern" class="alert alert-danger">Entity name can have only letters and numbers.</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- Entity Type -->
+							<div class="col-md-12 side-menu-item-space">
+								<div class="form-group">
+									<label class="col control-label side-menu-field-header">Select Entity Type <span style="color: red">*</span> </label>
+									<div class="col">
+										<select class="form-control selectpicker" data-size="10" data-live-search="false" data-style="btn-white" id="entity" [(ngModel)]="entity.entityType" #entityType="ngModel" name="entityType" disabled>
+											<option *ngFor="let entityType of entityTypeLst"
+												[value]="entityType.entityType">{{entityType.entityTypeName}}
+											</option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<!-- Entity Title -->
+							<div class="col-md-12 side-menu-item-space" *ngIf="(entity.entityType == 'EILS') || (entity.entityType == 'ELS') || (entity.entityType == 'EQRP')">
+								<div class="form-group">
+									<label class="col control-label side-menu-field-header">Title <span style="color: red">*</span> </label>
+									<div class="col" style="margin-bottom: 10px;">
+										<input type="text" class="form-control" style=" font-size: 10pt;" placeholder="Question Title" name="entityQuestionTitles" [(ngModel)]="entityQuestionTitle" required>
+									</div>
+								</div>
+							</div>
+							<!-- Entity Sub Title -->
+							<div class="col-md-12 side-menu-item-space" *ngIf="(entity.entityType == 'EILS') || (entity.entityType == 'ELS') ">
+								<div class="form-group">
+									<label class="col control-label side-menu-field-header">Sub Title <span style="color: red">*</span></label>
+									<div class="col" style="margin-bottom: 10px;">
+										<input type="text" class="form-control" style="font-size: 10pt;" placeholder="Question Sub Title" name="entityQuestionSubTitle" [(ngModel)]="entityQuestionSubTitle" required>
+									</div>
+								</div>
+							</div>
+							<!-- Entity Button Text -->
+							<div class="col-md-12 side-menu-item-space" *ngIf="(entity.entityType == 'EILS') || (entity.entityType == 'ELS') || (entity.entityType == 'EQRP') ">
+								<div class=" form-group">
+									<label class="col control-label side-menu-field-header">Payload <span style="color: red">*</span></label>
+									<div class="col">
+										<input type="text" class="form-control" style=" font-size: 10pt;" placeholder="Payload" name="entityButtonText" [(ngModel)]="entityButtonText" required>
+									</div>
+								</div>
+							</div>
+							<!-- Entity Image Url -->
+							<div class="col-md-12 side-menu-item-space" *ngIf="entity.entityType == 'EILS'">
+								<div class=" form-group">
+									<label class="col control-label side-menu-field-header"> Image Url <span style="color: red">*</span> </label>
+									<div class="col">
+										<input type="text" class="form-control" style=" font-size: 10pt;" placeholder="Image Url" name="entityImageUrl" [(ngModel)]="entityImageUrl" required>
+									</div>
+								</div>
+							</div>
+							<!-- Arabic - English Entity View -->
+							<div class="col-md-12 side-menu-item-space" style="padding: 0px 15px 0px 15px;" *ngIf="enableArabicLang">
+								<tabset>
+									<!-- Warning Icon -->
+									<div class="" style="margin-top: -28px; margin-left: 115px;">
+										<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateEntityLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+										<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateEntityLangWarning"></i>
+									</div>
+									<!-- English Tab View  -->
+									<tab heading='English' style="border: 1px solid #d0cfcf;">
+										<div style="padding: 0px;">
+											<!-- Example -->
+											<div class="side-menu-item-space">
+												<div class="form-group">
+													<label class="col control-label side-menu-field-header">Example</label>
+													<div class="col">
+														<input type="text" class="form-control side-menu-field-font" placeholder="Example"  name="entityEnglishExampleErrors" id="entityEnglishExampleErrors" #entityEnglishExampleErrors="ngModel" [(ngModel)]="entityEnglishExample" (focusout)="checkArabicUpdateEntity()">
+														<div *ngIf="entityEnglishExampleErrors.errors">
+															<div [hidden]="!entityEnglishExampleErrors.errors.pattern" class="alert alert-danger">Example can have only letters numbers and ' ? _ </div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<!-- Questions -->
+											<div style="width: 100%">
+												<div class=" side-menu-item-space">
+													<div class="form-group">
+														<label class="col control-label side-menu-field-header"> Questions <span style="color: red">*</span> </label>
+														<div class="col-12">
+															<tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" [(ngModel)]='questionsTag' class="side-menu-field-font" name="questions" placeholder="Enter Questions" secondaryPlaceholder="Enter Questions" (onAdd)="updateQuestion($event, entityEnglishExample); checkArabicUpdateEntity();"
+															  (onRemove)="deleteQuestion($event); checkArabicUpdateEntity()" [errorMessages]="errorMessages" [validators]="genValidators">
+															</tag-input>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</tab>
+									<!-- Arabic Tab View  -->
+									<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+										<div style="padding: 0px;">
+											<!-- Example -->
+											<div class=" side-menu-item-space">
+												<div class="form-group">
+													<label class="col control-label side-menu-field-header">Example</label>
+													<div class="col">
+														<input type="text" class="form-control side-menu-field-font"  placeholder="Example" name="entityArabicExampleError" id="example" #entityArabicExampleError="ngModel" [(ngModel)]="entityArabicExample" (focusout)="checkArabicUpdateEntity()">
+														<div *ngIf="entityArabicExampleError.errors">
+															<div [hidden]="!entityArabicExampleError.errors.pattern" class="alert alert-danger">Arabic Example can have only letters numbers </div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<!-- Questions -->
+											<div style="width: 100%">
+												<div class=" side-menu-item-space">
+													<div class="form-group">
+														<label class="col control-label side-menu-field-header">Questions <span style="color: red">*</span> </label>
+														<div class="col-12">
+															<tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" [(ngModel)]='questionsArabicTag' class="side-menu-field-font" name="questions" placeholder="Enter Questions" secondaryPlaceholder="Enter Questions" (onAdd)="updateQuestionArabic($event, entityArabicExample); checkArabicUpdateEntity();"
+															  (onRemove)="deleteQuestion($event); checkArabicUpdateEntity();" [errorMessages]="arabicErrorMessages" [validators]="arabicGenValidators">
+															</tag-input>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</tab>
+								</tabset>
+							</div>
+							<!-- English Entity View -->
+							<div *ngIf="!enableArabicLang" class="col-md-12">
+								<!-- Example -->
+								<div class="col-md-12 side-menu-item-space">
+									<div class="form-group">
+										<label class="col control-label side-menu-field-header">Example</label>
+										<div class="col">
+											<input type="text" class="form-control side-menu-field-font"  placeholder="Example" name="entityEnglishExampleErrors" id="entityEnglishExampleErrors" #entityEnglishExampleErrors="ngModel" [(ngModel)]="entity.example">
+											<div *ngIf="entityEnglishExampleErrors.errors">
+												<div [hidden]="!entityEnglishExampleErrors.errors.pattern" class="alert alert-danger">Example can have only letters numbers and </div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<!-- Questions -->
+								<div style="width: 100%" class="">
+									<div class="col-md-12 side-menu-item-space">
+										<div class="form-group">
+											<label class="col control-label side-menu-field-header"> Questions  <span style="color: red">*</span></label>
+											<div class="col-12">
+												<tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" [(ngModel)]='questionsTag' class="side-menu-field-font" name="questions" placeholder="Enter Questions" secondaryPlaceholder="Enter Questions" (onAdd)="updateQuestion($event, entity.example)"
+												  (onRemove)="deleteQuestion($event)"  [errorMessages]="errorMessages" [validators]="genValidators">
+												</tag-input>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- Entity Required -->
+							<div class="col-md-12 side-menu-item-space" style="width: 100%;">
+								<div class="row">
+									<div class="col-6  side-menu-field-header" style="padding: 10px 0px 0px 15px">
+										<label class="control-label" style="margin-top: 0px;">Required</label>
+									</div>
+									<div class="col-6 side-menu-field-font" style="padding: 10px 0px 10px 8px">
+										<ui-switch [(ngModel)]="entityRequired" (change)="onRequiredChange($event)" size="small" [disabled]="!entity.name"></ui-switch>
+									</div>
+								</div>
+							</div>
+							<div class=" col-md-12 side-menu-item-space">
+								<div class="row">
+								<div class="col control-label side-menu-field-header">
+									<label class="col control-label">Entity Result<span style="color: red">*</span></label>
+								</div>
+								<div class="col-6" style="margin-bottom: 10px;">
+									<div class="btn-group">
+										<label class="btn btn-info" [(ngModel)]="entity.dataType" btnRadio="NUMERIC" name="numeric" tabindex="0" role="button">Number</label>
+										<label class="btn btn-info" [(ngModel)]="entity.dataType" btnRadio="STRING" name="string" tabindex="0" role="button">String</label>
+									</div>
+								</div>
+							</div>
+							</div>
+							<!-- REGULAR	EXPRESSION -->
+							<div class="col-md-12" id="entityregex" *ngIf="entity.entityType == 'GEN'">
+								<label class="col control-label labelFont">REGULAR
+									EXPRESSION</label>
+								<div class="heading-line"></div>
+								<!-- Regular	Expression -->
+								<div class="form-group side-menu-item-space ">
+									<label class="col control-label side-menu-field-header">Regular
+										Expression</label>
+									<div class="row">
+										<div class="col-10" align="right" style="padding-left: 16px;">
+											<angular2-multiselect [data]="dropdownList" [(ngModel)]="selectedItems" [settings]="dropdownSettings" (onSelect)="onItemSelect(modalAddRegEx,$event)" (onDeSelect)="OnItemDeSelect($event)" [selectedItems]="selectedItems" (onSelectAll)="onSelectAll($event)"
+											  (onDeSelectAll)="onDeSelectAll($event)"></angular2-multiselect>
+										</div>
+										<div class="col-2">
+											<button type="submit" class="btn btn-md btn-primary btn-block" (click)="addRegEx(regExCreateModal)">
+												<i class="fa fa-plus"></i>
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- ENTITY EXTERNAL LIST -->
+							<div class="col-md-12" id="entitylist" *ngIf="(entity.entityType == 'EILS') || (entity.entityType == 'ELS') || (entity.entityType == 'EQRP')">
+								<label class="col control-label labelFont">EXTERNAL LIST</label>
+								<div class="heading-line"></div>
+								<!-- Call Method -->
+								<div class="form-group side-menu-item-space">
+									<label class="col control-label side-menu-field-header">Call Method <span style="color: red">*</span> </label>
+									<div class="col">
+										<select class="form-control selectpicker side-menu-field-font" id="callMethod" [(ngModel)]="entity.action.callMethod" #callMethod="ngModel" name="callMethod" required disabled>
+												<option *ngFor="let type of callMethods" [ngValue]="type">{{type}}</option>
+											</select>
+									</div>
+								</div>
+								<!-- Success Code -->
+								<div class="form-group side-menu-item-space ">
+									<label class="col control-label side-menu-field-header">Success Code</label>
+									<div class="col">
+										<input type="text" class="form-control side-menu-field-font" placeholder="Success Code" name="successCode" id="successCode" #successCode="ngModel" [(ngModel)]="entity.action.successCode" required>
+									</div>
+								</div>
+
+								<!-- ONLY ENGLISH -->
+								<div class="col-md-12" *ngIf="!enableArabicLang">
+									<div style="padding: 0px;">
+										<!-- Service URL -->
+										<div class="form-group side-menu-item-space ">
+											<label class="col control-label side-menu-field-header">Service URL <span style="color: red">*</span> </label>
+											<div class="col">
+												<input type="text" class="form-control side-menu-field-font" placeholder="Service URL" name="entityUpateActionUrl" id="entityUpateActionUrl" #entityUpateActionUrl="ngModel" pattern="(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?"
+												  [(ngModel)]="entityEnglishActionUrl" required>
+												<div *ngIf="entityUpateActionUrl.errors  && (entityUpateActionUrl.dirty || entityUpateActionUrl.persistent)">
+													<div [hidden]="!entityUpateActionUrl.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Service URL required.</div>
+													<div [hidden]="!entityUpateActionUrl.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Please enter valid Service URL</div>
+												</div>
+											</div>
+										</div>
+										<!-- Request Body -->
+										<div class="form-group side-menu-item-space" *ngIf="entity.action.callMethod == 'POST'">
+											<label class="col control-label side-menu-field-header">Request Body</label>
+											<div class="col">
+												<label class="col control-label " style="font-size: 8pt;">Example:
+ 	 												{{requestBodySample}}</label> <input type="text" class="form-control side-menu-field-font" placeholder="Request Body" style="height: 30px; " id="url" #actionRequestBody="ngModel" [(ngModel)]="entityEnglishRequestBody" required>
+											</div>
+										</div>
+									</div>
+								</div>
+								<!-- ENGLISH  & ARABIC -->
+								<div class="col-md-12" style="padding: 0px 8px 0px 8px;" *ngIf="enableArabicLang">
+									<tabset>
+										<!-- Warning  -->
+										<div class="" style="margin-top: -28px; margin-left: 115px;">
+											<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="createEntityLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+											<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!createEntityLangWarning"></i>
+										</div>
+										<!-- English Tab-->
+										<tab heading='English' style="border: 1px solid #d0cfcf;">
+											<div style="padding: 0px;">
+												<!-- Service URL -->
+												<div class="form-group side-menu-item-space ">
+													<label class="col control-label side-menu-field-header">Service URL <span style="color: red">*</span> </label>
+													<div class="col">
+														<input type="text" class="form-control side-menu-field-font" placeholder="Service URL" #entityEnglishActionUrls="ngModel" name="entityEnglishActionUrls" pattern="(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?" [(ngModel)]="entityEnglishActionUrl"
+														  required>
+														<div *ngIf="entityEnglishActionUrls.errors  && (entityEnglishActionUrls.dirty || entityEnglishActionUrls.persistent)">
+															<div [hidden]="!entityEnglishActionUrls.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Service URL required.</div>
+															<div [hidden]="!entityEnglishActionUrls.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Please enter valid Service URL</div>
+														</div>
+													</div>
+												</div>
+												<!-- Request Body -->
+												<div class="form-group side-menu-item-space" *ngIf="entity.action.callMethod == 'POST'">
+													<label class="col control-label side-menu-field-header">Request Body</label>
+													<div class="col">
+														<label class="col control-label " style="font-size: 8pt;">Example:
+															 {{requestBodySample}}</label> <input type="text" class="form-control side-menu-field-font" placeholder="Request Body" style="height: 30px; " id="url" name="entityEnglishRequestBodys" #entityEnglishRequestBodys="ngModel" [(ngModel)]="entityEnglishRequestBody">
+													</div>
+												</div>
+											</div>
+										</tab>
+										<!-- Arabic Tab-->
+										<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+											<div style="padding: 0px;">
+												<!-- Service URL -->
+												<div class="form-group side-menu-item-space ">
+													<label class="col control-label side-menu-field-header">Service URL <span style="color: red">*</span></label>
+													<div class="col">
+														<input type="text" class="form-control side-menu-field-font" placeholder="Service URL" name="entityArabicActionUrls" id="entityArabicActionUrls" #entityArabicActionUrls="ngModel" pattern="(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?"
+														  [(ngModel)]="entityArabicActionUrl" required>
+														<div *ngIf="entityArabicActionUrls.errors  && (entityArabicActionUrls.dirty || entityArabicActionUrls.persistent)">
+															<div [hidden]="!entityArabicActionUrls.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Please enter valid Service URL</div>
+														</div>
+													</div>
+												</div>
+												<!-- Request Body -->
+												<div class="form-group side-menu-item-space" *ngIf="entity.action.callMethod == 'POST'">
+													<label class="col control-label side-menu-field-header">Request Body</label>
+													<div class="col">
+														<label class="col control-label " style="font-size: 8pt;">Example:
+ 															 {{requestBodySample}}</label> <input type="text" class="form-control side-menu-field-font" placeholder="Request Body" style="height: 30px; " id="url" name="actionRequestBodys" #actionRequestBodys="ngModel" [(ngModel)]="entityArabicRequestBody">
+													</div>
+												</div>
+											</div>
+										</tab>
+									</tabset>
+								</div>
+							</div>
+							<!-- EXTERNAL LIST  ERROR-->
+							<div class="col-md-12" id="entityerror" *ngIf="(entity.entityType == 'EILS') || (entity.entityType == 'ELS')">
+								<label class="col control-label labelFont ">ERROR</label>
+								<div class="heading-line"></div>
+								<div class="form-group side-menu-item-space">
+									<label class="col control-label side-menu-field-header">Error Code </label>
+									<div class="col">
+										<input type="text" class="form-control side-menu-field-font" placeholder="Error Node" name="url" id="url" #actionNode="ngModel" [(ngModel)]="entity.action.errorCode" required>
+									</div>
+								</div>
+							</div>
+							<!-- EXTERNAL LIST  ERROR TABLE-->
+							<div class="col-md-12" id="entityerror" *ngIf="(entity.entityType == 'EILS') || (entity.entityType == 'ELS') || (entity.entityType == 'EQRP')">
+								<div class="form-group">
+									<label class="col control-label side-menu-field-header">Error
+										Responses</label>
+									<div class="row" style="margin: 2px 2px 12px 2px;" *ngIf="!enableArabicLang">
+										<div class="col-3">
+											<input type="text" [(ngModel)]="er.code" class="form-control side-menu-field-font" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+										</div>
+										<div class="col-6">
+											<input type="text " [(ngModel)]="er.message" class="form-control side-menu-field-font" placeholder="Error Response Message" name="errorResponseMessage" id="errorResponseMessage" />
+										</div>
+										<div class="col-2">
+											<button id="b1" class="form-control plus-error" style="padding-left: 14px;" (click)="addErrorResponse(er)" class="btn btn-md btn-primary btn-block " [disabled]="!entity.action.errorCode" type="button">
+												<i class="fa fa-plus"></i>
+											</button>
+										</div>
+									</div>
+									<div class="" *ngIf="enableArabicLang">
+										<tabset>
+											<div class="" style="margin-top: -28px; margin-left: 115px;">
+												<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateActionLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+												<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateActionLangWarning"></i>
+											</div>
+											<tab heading='English' style="border: 1px solid #d0cfcf;">
+												<div class="row" style="padding: 0px;">
+													<div class="col-4">
+														<input type="text" [(ngModel)]="er.code" class="form-control side-menu-field-font" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+													</div>
+													<div class="col-6">
+														<input type="text " [(ngModel)]="er.message" class="form-control side-menu-field-font" placeholder="Error Response" name="errorResponseMessage" id="errorResponseMessage" />
+													</div>
+													<div class="col-2">
+														<button id="b1" class="form-control plus-error" style="padding-left: 14px;" (click)="addErrorResponse(er)" class="btn btn-md btn-primary btn-block " [disabled]="!entity.action.errorCode" type="button">
+															<i class="fa fa-plus"></i>
+														</button>
+													</div>
+												</div>
+											</tab>
+											<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+												<div class="row" style="padding: 0px;">
+													<div class="col-4">
+														<input type="text" [(ngModel)]="er.code" class="form-control side-menu-field-font" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+													</div>
+													<div class="col-6">
+														<input type="text " [(ngModel)]="er.message" class="form-control side-menu-field-font" placeholder="Error Response " name="errorResponseMessage" id="errorResponseMessage" />
+
+													</div>
+													<div class="col-2">
+														<button id="b1" class="form-control plus-error" style="padding-left: 14px;" (click)="addErrorResponseArabic(er)" class="btn btn-md btn-primary btn-block " [disabled]="!entity.action.errorCode" type="button">
+															<i class="fa fa-plus"></i>
+														</button>
+													</div>
+												</div>
+											</tab>
+										</tabset>
+									</div>
+									<div class="col">
+										<div class="" *ngIf="erResponses.length !=0">
+											<div class="row">
+												<div class="col pull-right"></div>
+											</div>
+											<table id="data-table" class="table table-striped table-bordered">
+												<thead>
+													<tr>
+														<td style="font-size: 9pt; width: 30%">Error Code</td>
+														<td style="font-size: 9pt;">Error Message</td>
+														<td style="font-size: 9pt;">Language</td>
+														<td></td>
+													</tr>
+												</thead>
+												<tbody>
+													<tr class="odd gradeA" *ngFor="let er of erResponses">
+														<td style="font-size: 8pt;">{{er.errorCode}}</td>
+														<td style="font-size: 8pt;">{{er.errorResponse}}</td>
+														<td style="font-size: 8pt;">{{er.localeCode}}</td>
+														<td><a href="javascript:;" (click)="removeErrorResponse(er)" style="color: #ff5b57; text-decoration: none;"> <i
+																class="fa fa-trash pull-right"></i>
+														</a></td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- ENTITY ID TABLE LIST  FOR ACION-->
+							<div class="col-md-12 " id="entityvalues" *ngIf="(entity.entityType == 'EILS') || (entity.entityType == 'ELS') || (entity.entityType == 'EQRP')">
+								<div class="row">
+									<label class="col control-label labelFont ">VALUES</label>
+									<div class="heading-line"></div>
+									<div class="col" style="background-color: white;margin-left: 8px;">
+										<table id="data-table" *ngIf="selectedEntitys.length != 0" class="table table-striped table-bordered">
+											<thead>
+												<tr>
+													<td>Entity Name</td>
+													<td>ID</td>
+												</tr>
+											</thead>
+											<tbody>
+												<tr *ngFor="let entitys of selectedEntitys">
+													<td>{{entitys.entity.name}}</td>
+													<td>{{entitys.entity.id}}</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+							<!-- ACION ID TABLE LIST  FOR ACION-->
+							<div class="col-md-12 " *ngIf="(entity.entityType == 'EILS') || (entity.entityType == 'ELS') || (entity.entityType == 'EQRP')">
+								<div class="row">
+									<div class="col" style="background-color: white;margin-left: 8px;">
+										<table id="data-table" *ngIf="selectedActions.length != 0" class="table table-striped table-bordered">
+											<thead>
+												<tr>
+													<td>Action Name</td>
+													<td>ID</td>
+												</tr>
+											</thead>
+											<tbody>
+												<tr *ngFor="let actions of selectedActions">
+													<td>{{actions.action.name}}</td>
+													<td>{{actions.action.id}}</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+							<div class="rightbar"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Action Div -->
+			<div *ngIf="viewAction" align="Left" class="subDiv">
+				<div class="row">
+					<div class="col-2 right-sidebar">
+						<ul class="list-group">
+							<a class="list-group-item right-sidebar-icon" tooltip="Action" placement="left" (click)="triggerScrollTo('actionhome')"> <i
+								class="fa fa-fw fa fa-home fa-lg" ></i>
+							</a>
+							<a class="list-group-item right-sidebar-icon" tooltip="Confirmation" placement="left" (click)="triggerScrollTo('actionconfirm')"> <i
+								class="fa fa-fw fa-code fa-lg" ></i>
+							</a>
+							<a class="list-group-item right-sidebar-icon" tooltip="Error" placement="left" (click)="triggerScrollTo('actionerror')"> <i
+								class="fa fa-fw fa-lightbulb-o fa-lg" ></i>
+							</a>
+							<a class="list-group-item right-sidebar-icon" tooltip="Values" placement="left" (click)="triggerScrollTo('actionvalues')"> <i
+								class="fa fa-fw fa-info fa-lg" ></i>
+							</a>
+						</ul>
+						<div class="rightbar"></div>
+					</div>
+					<div class="col-10">
+						<div class="row" style="margin-top: 15px;">
+							<div class="col-8">
+								<label class="col control-label labelFont ">ACTION</label>
+							</div>
+							<div class="col-2" align="Right">
+								<a href="javascript:;" class="close-right-view" aria-hidden="true" (click)="closeRightView()">x</a>
+							</div>
+						</div>
+						<div class="heading-line"></div>
+						<div class="" (clickOutside)="onClickedOutsideAction($event, action, response)">
+							<div class="row" style="height: -webkit-fill-available; overflow-y: scroll;" (click)="onClickedInsideAction()" (keyup.enter)="onClickedOutsideAction($event, action, response)">
+
+								<div class="col-md-12 side-menu-item-space" id="actionhome">
+									<div class="form-group">
+										<label class="col control-label side-menu-field-header">Name <span style="color: red">*</span></label>
+										<div class="col">
+											<input type="text" class="form-control side-menu-field-font" placeholder="Action Name" maxlength="25" name="actionName" id="actionName" #actionName="ngModel" [(ngModel)]="action.name" pattern="^[a-zA-Z0-9 ]*$" required>
+											<div *ngIf="actionName.errors  && (actionName.dirty || actionName.persistent)">
+												<div [hidden]="!actionName.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Action name required.</div>
+												<div [hidden]="!actionName.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Action name can have only letters and numbers.</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="" *ngIf="!enableArabicLang">
+									<div class="col-md-12 side-menu-item-space" style="    padding: 0px 14px 0px 15px;">
+										<div class="form-group">
+											<label class="col control-label side-menu-field-header">Service URL <span style="color: red">*</span></label>
+											<div class="col">
+												<input type="text" class="form-control side-menu-field-font" placeholder="Service URL" name="actionUrl" id="actionUrl" #actionUrl="ngModel" pattern="(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?" [(ngModel)]="action.url"
+												  required>
+												<div *ngIf="actionUrl.errors  && (actionUrl.dirty || actionUrl.persistent)">
+													<div [hidden]="!actionUrl.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Service URL required.</div>
+													<div [hidden]="!actionUrl.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Please enter valid Service URL</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="col-md-12 side-menu-item-space" *ngIf="enableArabicLang" style="    padding: 0px 14px 0px 15px;">
+									<tabset>
+										<div class="" style="margin-top: -28px; margin-left: 115px;">
+											<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateActionLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+											<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateActionLangWarning"></i>
+										</div>
+										<tab heading='English' style="border: 1px solid #d0cfcf;">
+											<div style="padding: 0px;">
+												<div class="form-group">
+													<label class="col control-label side-menu-field-header">Service URL <span style="color: red">*</span></label>
+													<div class="col">
+														<input type="text" class="form-control side-menu-field-font" placeholder="Service URL" name="actionUrl" id="actionUrl" #actionUrl="ngModel" pattern="(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?" [(ngModel)]="action.url"
+														  required>
+														<div *ngIf="actionUrl.errors  && (actionUrl.dirty || actionUrl.persistent)">
+															<div [hidden]="!actionUrl.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Service URL required.</div>
+															<div [hidden]="!actionUrl.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Please enter valid Service URL</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</tab>
+										<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+											<div style="padding: 0px;">
+												<div class="form-group">
+													<label class="col control-label side-menu-field-header">Service URL <span style="color: red">*</span></label>
+													<div class="col">
+														<input type="text" class="form-control side-menu-field-font" placeholder="Service URL" name="actionUrl" id="arabicActionUrls" #arabicActionUrls="ngModel" pattern="(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?" [(ngModel)]="arabicActionUrl"
+														  required>
+														<div *ngIf="arabicActionUrls.errors  && (arabicActionUrls.dirty || arabicActionUrls.persistent)">
+															<div [hidden]="!arabicActionUrls.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Please enter valid Service URL</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</tab>
+									</tabset>
+								</div>
+
+								<div class="col-md-12 side-menu-item-space">
+									<div class="form-group">
+										<label class="col control-label side-menu-field-header">Call Method <span style="color: red">*</span></label>
+										<div class="col">
+											<select class="form-control selectpicker side-menu-field-font" data-size="10" data-live-search="false" data-style="btn-white" id="callMethod" [(ngModel)]="action.callMethod" #callMethod="ngModel" name="callMethod" required disabled>
+												<option *ngFor="let type of callMethods" [ngValue]="type">{{type}}</option>
+											</select>
+										</div>
+									</div>
+								</div>
+
+								<!-- Service Type -->
+								<div class="col-md-12 side-menu-item-space" style="padding: 0px 14px 0px 15px;" *ngIf="action.callMethod == 'POST'">
+								  <div class="form-group">
+										<label class=" col control-label side-menu-field-header">Service
+										Type <span style="color: red">*</span>
+									</label>
+								    <div  style="margin-bottom: 10px;">
+								      <select class="form-control selectpicker side-menu-field-font" data-size="10" data-live-search="false" data-style="btn-white" id="serviceType" name="serviceTypes" style="font-size: 10pt;" [(ngModel)]="action.serviceType" #serviceTypes="ngModel" name="serviceType" required (change)="onActionTypeChange($event.target.value)" disabled>
+								      <option *ngFor="let data of serviceType" [ngValue]="data">{{data}}</option>
+								    </select>
+								    </div>
+								  </div>
+								</div>
+
+								<!-- Request Body -->
+								<div class="form-group side-menu-item-space" *ngIf="action.callMethod == 'POST' && action.serviceType == 'json'">
+								  <label class="col control-label side-menu-field-header">Request Body <span style="color: red">*</span></label>
+								  <div class="col">
+								    <label class="col control-label " style="font-size: 8pt;">Example:
+								    {{requestBodySample}}</label> <input type="text" class="form-control side-menu-field-font" placeholder="Request Body" style="height: 30px;" id="url" name="entityEnglishRequestBodys" #entityEnglishRequestBodys="ngModel" [(ngModel)]="action.requestBody"
+								      (focusout)="checkArabicUrlCreateAction()" required>
+								  </div>
+								</div>
+
+								<!-- Headers -->
+								<div class="col-md-12 side-menu-item-space" *ngIf="((action.serviceType == 'multipart/form-data' || action.serviceType == 'x-www-form-urlencoded' || action.serviceType == 'json') && (action.callMethod == 'POST'))">
+								  <label class="col control-label side-menu-field-header">Headers</label>
+								  <div class="col">
+								    <div class="row">
+								      <div class="col-5">
+								        <input type="text" [(ngModel)]="header.header_key" class="form-control"  placeholder="Headers Key" name="headerKey" id="headerKey" />
+								      </div>
+								      <div class="col-5">
+								        <input type="text" [(ngModel)]="header.header_value" class="form-control"  placeholder="Header Value" name="headerValues" id="headerValues" />
+								      </div>
+								      <div class="col-2">
+								        <button id="b1" class="form-control"  (click)="addHeaders(header)" class="btn btn-md btn-primary btn-block" type="button">
+								        <i class="fa fa-plus"
+								          style="margin-left: -4px; margin-top: 1px;"></i>
+								      </button>
+								      </div>
+								    </div>
+								  </div>
+								</div>
+
+								<!-- Headers Show Box-->
+								<div class="col-md-12 side-menu-item-space" *ngIf="((action.serviceType == 'multipart/form-data' || action.serviceType == 'x-www-form-urlencoded' || action.serviceType == 'json') && (action.callMethod == 'POST'))">
+								  <div class="row form-group">
+								      <div class="table-responsive" style="padding: 10px 14px 0px 14px;">
+								        <table id="data-table" class="table table-striped table-bordered">
+								          <thead>
+								            <tr>
+								              <th style="font-size: 8pt;">Header Key</th>
+								              <th style="font-size: 8pt;">Header Value</th>
+								              <th></th>
+								            </tr>
+								          </thead>
+								          <tbody>
+								            <tr class="odd gradeA" *ngFor="let item of headers">
+								              <td style="font-size: 8pt;">{{item.header_key}}</td>
+								              <td style="font-size: 8pt;">{{item.header_value}}</td>
+								              <td><a (click)="removeHeaders(header)" style="color: #ff5b57; text-decoration: none;"><i
+								                class="fa fa-trash pull-right"></i></a></td>
+								            </tr>
+								          </tbody>
+								        </table>
+								      </div>
+								  </div>
+								</div>
+
+								<!-- Request Params -->
+								<div class="col-md-12 side-menu-item-space" *ngIf="((action.serviceType == 'multipart/form-data' || action.serviceType == 'x-www-form-urlencoded') && (action.callMethod == 'POST'))">
+								  <label class="col control-label side-menu-field-header">Request Params</label>
+								  <div class="col">
+								    <div class="row">
+								      <div class="col-4">
+								        <input type="text" [(ngModel)]="requestParam.entitykey" class="form-control" style="font-size: 8pt;" placeholder="Entity Key" name="entityKey" id="entityKey" />
+								      </div>
+								      <div class="col-4" >
+								        <input type="text" [(ngModel)]="requestParam.entityvalue" class="form-control"  placeholder="Entity Value" name="entityValues" id="entityValues" />
+								      </div>
+								      <div class="col-2"  *ngIf="action.serviceType == 'multipart/form-data'">
+								        <select class="form-control selectpicker" data-size="10" data-live-search="false" data-style="btn-white" id="importType" name="importType"  [(ngModel)]="requestParam.importType" #callMethod="ngModel"
+								          name="importType">
+								        <option *ngFor="let type of importType" [ngValue]="type">{{type}}</option>
+								      </select>
+								      </div>
+								      <div class="col-2">
+								        <button id="b1" class="form-control"   (click)="addRequestParams(requestParam)" class="btn btn-md btn-primary btn-block" type="button">
+								        <i class="fa fa-plus"
+								          style="margin-left: -4px; margin-top: 1px;"></i>
+								      </button>
+								      </div>
+								    </div>
+								  </div>
+								</div>
+
+								<!-- Request Params Show Box-->
+								<div class="col-md-12 side-menu-item-space" *ngIf="((action.serviceType == 'multipart/form-data' || action.serviceType == 'x-www-form-urlencoded') && (action.callMethod == 'POST'))">
+								  <div class="row form-group">
+								    <div class="col-12">
+								      <div class="table-responsive" style="padding: 4px 9px 0px 9px">
+								        <table id="data-table" class="table table-striped table-bordered">
+								          <thead>
+								            <tr>
+								              <th style="font-size: 8pt;">Entity Key</th>
+								              <th style="font-size: 8pt;">Entity Value</th>
+								              <th style="font-size: 8pt;" *ngIf="action.serviceType == 'multipart/form-data'">Type</th>
+								              <th></th>
+								            </tr>
+								          </thead>
+								          <tbody>
+								            <tr class="odd gradeA" *ngFor="let requestParam of requestParamArr">
+								              <td style="font-size: 8pt;">{{requestParam.entitykey}}</td>
+								              <td style="font-size: 8pt;">{{requestParam.entityvalue}}</td>
+								              <td style="font-size: 8pt;" *ngIf="action.serviceType == 'multipart/form-data'">{{requestParam.importType}}</td>
+								              <td><a (click)="removeRequestParams(requestParam)" style="color: #ff5b57; text-decoration: none;"><i
+								                class="fa fa-trash pull-right"></i></a></td>
+								            </tr>
+								          </tbody>
+								        </table>
+								      </div>
+								    </div>
+								  </div>
+								</div>
+
+								<div class="col-md-12" id="actionconfirm">
+									<label class="col control-label labelFont ">CONFIRMATION</label>
+									<div class="heading-line"></div>
+									<div class="" *ngIf="enableArabicLang" style="padding: 4px 9px 0px 9px">
+										<tabset>
+											<div class="" style="margin-top: -28px; margin-left: 115px;">
+												<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateActionLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+												<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateActionLangWarning"></i>
+											</div>
+											<tab heading='English' style="border: 1px solid #d0cfcf;">
+												<div style="padding: 0px;">
+													<label style="font-size: 8pt;">Example: Are you sure that
+													 you want to make payment of #%2%# to #%4%#</label>
+													<input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageEnglish" (focusout)="checkArabicUpdateAction()">
+												</div>
+											</tab>
+											<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+												<div style="padding: 0px;">
+													<label style="font-size: 8pt;">Example: Are you sure that
+													 you want to make payment of #%2%# to #%4%#</label>
+													<!-- [(ngModel)]="action.confirmAction.text" -->
+													<input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageArabic" (focusout)="checkArabicUpdateAction()">
+												</div>
+											</tab>
+										</tabset>
+									</div>
+									<div class="col-md-12" *ngIf="!enableArabicLang">
+										<div style="padding: 0px;">
+											<label style="font-size: 8pt;">Example: Are you sure that
+											 you want to make payment of  #%2%# to #%4%#</label>
+											<input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="action.confirmation">
+										</div>
+									</div>
+								</div>
+
+								<div class="col-md-12">
+									<div class="form-group side-menu-item-space">
+										<label class="col control-label side-menu-field-header">Response Path</label>
+										<div class="col">
+											<input type="text" class="form-control side-menu-field-font" placeholder="Response Path" name="responsePath" id="errorCode" #responsePath="ngModel" [(ngModel)]="action.responsePath">
+
+										</div>
+									</div>
+								</div>
+
+								<div class="col-md-12">
+									<div class=" row form-group side-menu-item-space">
+										<div class="col control-label side-menu-field-header">
+											<label class="col control-label">Action Result<span style="color: red">*</span></label>
+										</div>
+										<div class="col-6" style="margin-bottom: 10px;">
+											<div class="btn-group">
+												<label class="btn btn-info" [(ngModel)]="action.dataType" btnRadio="NUMERIC" name="numeric" tabindex="0" role="button">Number</label>
+												<label class="btn btn-info" [(ngModel)]="action.dataType" btnRadio="STRING" name="string" tabindex="0" role="button">String</label>
+											</div>
+										</div>
+									</div>
+								</div>
+
+
+								<div class="col-md-12" id="actionerror" >
+									<label class="col control-label labelFont ">ERROR</label>
+									<div class="heading-line"></div>
+									<div class="form-group side-menu-item-space">
+										<label class="col control-label side-menu-field-header">Success Code </label>
+										<div class="col">
+											<input type="text" class="form-control side-menu-field-font" placeholder="Success Code" name="successCode" id="successCode" #actionsuccessCode="ngModel" [(ngModel)]="action.successCode " required>
+										</div>
+									</div>
+									<div class="form-group side-menu-item-space">
+										<label class="col control-label side-menu-field-header">Error Node </label>
+										<div class="col">
+											<input type="text" class="form-control side-menu-field-font" placeholder="Error Node" name="url" id="url" #actionNode="ngModel" [(ngModel)]="action.errorCode" required>
+										</div>
+									</div>
+								</div>
+								<!-- <div class="col-md-12 form-group">
+									<label class="col-md-3 control-label"></label>
+									<div class="col">
+										<div class="row">
+											<div class="col-4" style="width: 40%;">
+												<input type="text" [(ngModel)]="er.code" class="form-control" style="font-size: 8pt;" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+											</div>
+											<div class="col-8" style="width: 62%; margin-top: -34px; margin-left: 31%;">
+												<input type="text" [(ngModel)]="er.message" class="form-control" style="height: 30px; font-size: 8pt; margin-top: 4px;" placeholder="Error Response Message" name="errorResponseMessage" id="errorResponseMessage" />
+												<button id="b1" class="form-control plus-error"  (click)="addErrorResponse(er)" class="btn btn-sucess add-more" type="button">+</button>
+											</div>
+										</div>
+									</div>
+								</div> -->
+								<div class="col-md-12 ">
+									<div class="form-group side-menu-item-space">
+										<label class="col control-label side-menu-field-header">Error
+											Responses</label>
+										<div class="row side-menu-item-space" style="padding: 0px 10px 0px 10px;" *ngIf="!enableArabicLang">
+											<div class="col-3">
+												<input type="text" [(ngModel)]="er.code" class="form-control side-menu-field-font" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+											</div>
+											<div class="col-6">
+												<input type="text " [(ngModel)]="er.message" class="form-control side-menu-field-font" placeholder="Error Response Message" name="errorResponseMessage" id="errorResponseMessage" />
+
+											</div>
+											<div class="col-2">
+												<button id="b1" class="form-control plus-error" style="padding-left: 39%;  margin-left: -7px; margin-top: 2px;" (click)="addErrorResponse(er)" class="btn btn-md btn-primary btn-block " [disabled]="!action.errorCode" type="button">
+													<i class="fa fa-plus"></i>
+												</button>
+											</div>
+										</div>
+										<div class="side-menu-item-space" *ngIf="enableArabicLang" style="padding: 0px 10px 0px 10px;">
+											<tabset>
+												<div class="" style="margin-top: -28px; margin-left: 115px;">
+													<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateActionLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+													<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateActionLangWarning"></i>
+												</div>
+												<tab heading='English' style="border: 1px solid #d0cfcf;">
+													<div class="row side-menu-item-space" style="padding: 0px;">
+														<div class="col-4">
+															<input type="text" [(ngModel)]="er.code" class="form-control side-menu-field-font" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+														</div>
+														<div class="col-6">
+															<input type="text " [(ngModel)]="er.message" class="form-control side-menu-field-font" placeholder="Error Response" name="errorResponseMessage" id="errorResponseMessage" />
+
+														</div>
+														<div class="col-2">
+															<button id="b1" class="form-control plus-error" style="padding-left: 39%;  margin-left: -7px; margin-top: 2px;" (click)="addErrorResponse(er)" class="btn btn-md btn-primary btn-block " [disabled]="!action.errorCode" type="button">
+																<i class="fa fa-plus"></i>
+															</button>
+														</div>
+													</div>
+												</tab>
+												<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+													<div class="row side-menu-item-space" style="padding: 0px;">
+														<div class="col-4">
+															<input type="text" [(ngModel)]="er.code" class="form-control side-menu-field-font" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+														</div>
+														<div class="col-6">
+															<input type="text " [(ngModel)]="er.message" class="form-control side-menu-field-font" placeholder="Error Response " name="errorResponseMessage" id="errorResponseMessage" />
+
+														</div>
+														<div class="col-2">
+															<button id="b1" class="form-control plus-error" style="padding-left: 14px;" (click)="addErrorResponseArabic(er)" class="btn btn-md btn-primary btn-block " [disabled]="!action.errorCode" type="button">
+																<i class="fa fa-plus"></i>
+															</button>
+														</div>
+													</div>
+												</tab>
+											</tabset>
+										</div>
+										<div class="col">
+											<div class="" *ngIf="erResponses.length !=0">
+												<div class="row">
+													<div class="col pull-right"></div>
+												</div>
+												<table id="data-table" class="table table-striped table-bordered">
+													<thead>
+														<tr>
+															<td style="font-size: 9pt; width: 30%">Error Code</td>
+															<td style="font-size: 9pt;">Error Message</td>
+															<td style="font-size: 9pt;">Language</td>
+															<td></td>
+														</tr>
+													</thead>
+													<tbody>
+														<tr class="odd gradeA" *ngFor="let er of erResponses">
+															<td style="font-size: 8pt;">{{er.errorCode}}</td>
+															<td style="font-size: 8pt;">{{er.errorResponse}}</td>
+															<td style="font-size: 8pt;">{{er.localeCode}}</td>
+															<td><a href="javascript:;" (click)="removeErrorResponse(er)" style="color: #ff5b57; text-decoration: none;"> <i
+																	class="fa fa-trash pull-right"></i>
+															</a></td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12 form-group" id="actionvalues">
+									<label class="col control-label labelFont ">VALUES</label>
+									<div class="heading-line"></div>
+									<div class="row">
+										<div class="col" style="background-color: white;margin-left: 8px;">
+											<table id="data-table" *ngIf="selectedEntitys.length != 0" class="table table-striped table-bordered">
+												<thead>
+													<tr>
+														<td>Entity Name</td>
+														<td>ID</td>
+													</tr>
+												</thead>
+												<tbody>
+													<tr *ngFor="let entitys of selectedEntitys">
+														<td>{{entitys.entity.name}}</td>
+														<td>{{entitys.entity.id}}</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+								<!-- ACION ID TABLE LIST  FOR ACION-->
+								<div class="col-md-12 form-group">
+									<div class="row">
+										<div class="col" style="background-color: white;margin-left: 8px;">
+											<table id="data-table" *ngIf="selectedActions.length != 0" class="table table-striped table-bordered">
+												<thead>
+													<tr>
+														<td>Action Name</td>
+														<td>ID</td>
+													</tr>
+												</thead>
+												<tbody>
+													<tr *ngFor="let actions of selectedActions">
+														<td>{{actions.action.name}}</td>
+														<td>{{actions.action.id}}</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+								<div class="row save-delete" *ngIf="selectedAction" style="margin-left: 78%;">
+									<!-- <div class="col-6" align="right">
+										<button type="submit" class="btn btn-md btn-danger btn-block save-btn" (click)="removeActionModal(removeAction)">Delete</button>
+									</div> -->
+									<div class="col-12">
+										<!-- <button type="submit" class="btn btn-md btn-primary btn-block save-btn"  [disabled]="!action.name && !action.url"  (click)=updateServiceAction(action,response)>Save</button> -->
+									</div>
+								</div>
+
+								<div style="clear: both; height: inherit;"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--  Response Div -->
+			<div *ngIf="viewResponse" align="Left" class="subDiv">
+				<div class="row">
+					<div class="col-2 right-sidebar">
+						<ul class="list-group">
+							<a class="list-group-item right-sidebar-icon" tooltip="Response" placement="left"> <i
+								class="fa fa-fw fa fa-home fa-lg"></i>
+							</a>
+							<a class="list-group-item right-sidebar-icon" tooltip="Values" placement="left"> <i
+								class="fa fa-fw fa fa-info fa-lg"></i>
+							</a>
+						</ul>
+						<div class="rightbar"></div>
+					</div>
+					<div class="col-10">
+						<div class="row" style="margin-top: 15px;">
+							<div class="col-8">
+								<label class="col control-label labelFont ">RESPONSE</label>
+							</div>
+							<div class="col-2" align="Right">
+								<a href="javascript:;" class="close-right-view" aria-hidden="true" (click)="closeRightView()">x</a>
+							</div>
+						</div>
+						<div class="heading-line" id="responsehome"></div>
+						<div class="" style="height: 100%; overflow-y: scroll;" (clickOutside)="onClickedOutsideResponses($event)">
+							<div class="col-md-12 side-menu-item-space" *ngIf="enableArabicLang" (click)="onClickedInsideResponses()">
+								<tabset>
+									<div class="" style="margin-top: -28px; margin-left: 115px;">
+										<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateResponseLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+										<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateResponseLangWarning"></i>
+									</div>
+									<tab heading='English' style="border: 1px solid #d0cfcf;">
+										<div style="padding: 0px;">
+												<tag-input theme='bootstrap' #domElementId autofocus  [addOnBlur]="true" [clearOnBlur]="true" [(ngModel)]='resTag'  (onSelect)="onSelectResponse($event); " (onFocus)="onSelectResponse($event);" name="ResponseTag" placeholder="Enter Response Message" secondaryPlaceholder="Response Message" class="side-menu-field-font"
+											  (onAdd)="updateResponse($event); checkArabicUpdateResponse();" (onRemove)="deleteOneResponse($event); checkArabicUpdateResponse();"  [errorMessages]="errorMessages" [validators]="genValidators"></tag-input>
+										</div>
+									</tab>
+									<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+										<div style="padding: 0px;">
+											<tag-input theme='bootstrap' autofocus [addOnBlur]="true" [clearOnBlur]="true" name="Response" (onSelect)="onSelectResponse($event)" [(ngModel)]='resArabicTag' placeholder="Enter Response Message" secondaryPlaceholder="Response Message" class="side-menu-field-font"
+											  (onAdd)="updateArabicResponse($event); checkArabicUpdateResponse();" (onRemove)="deleteOneResponse($event); checkArabicUpdateResponse();" [errorMessages]="arabicErrorMessages" [validators]="arabicGenValidators"></tag-input>
+										</div>
+									</tab>
+								</tabset>
+							</div>
+							<div class="col-md-12 form-group side-menu-item-space" (click)="onClickedInsideResponses()" *ngIf="!enableArabicLang">
+								<label class="col control-label side-menu-field-header">Response Message</label>
+								<div class="col" style="padding: 0px;">
+									<tag-input theme='bootstrap' [addOnBlur]="true" autofocus [clearOnBlur]="true" [(ngModel)]='resTag' name="Response" placeholder="Enter Response Message" (onSelect)="onSelectResponse($event)" secondaryPlaceholder="Response Message" class="side-menu-field-font"
+									  (onAdd)="updateResponse($event)" (onRemove)="deleteOneResponse($event)" [errorMessages]="errorMessages" [validators]="genValidators"></tag-input>
+								</div>
+							</div>
+							<div class="col-md-12 form-group side-menu-item-space" *ngIf="editResponses">
+								<div>
+									<textarea class="side-menu-field-font form-control" maxlength="1800" style="min-height: 100px;" [(ngModel)]="editResponses.responseText" (focusout)="editOneResponse(editResponses)"></textarea>
+								</div>
+							</div>
+
+							<div class="col-md-12 form-group" id="responsesvalues">
+								<div class="row">
+									<label class="col control-label labelFont ">VALUES</label>
+									<div class="heading-line"></div>
+									<div class="col" style="background-color: white;margin-left: 8px;">
+										<table id="data-table" *ngIf="selectedEntitys.length != 0" class="table table-striped table-bordered">
+											<thead>
+												<tr>
+													<td>Entity Name</td>
+													<td>ID</td>
+												</tr>
+											</thead>
+											<tbody>
+												<tr *ngFor="let entitys of selectedEntitys">
+													<td>{{entitys.entity.name}}</td>
+													<td>{{entitys.entity.id}}</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+							<!-- ACION ID TABLE LIST  FOR ACION-->
+							<div class="col-md-12 form-group">
+								<div class="row">
+									<div class="col" style="background-color: white;margin-left: 8px;">
+										<table id="data-table" *ngIf="selectedActions.length != 0" class="table table-striped table-bordered">
+											<thead>
+												<tr>
+													<td>Action Name</td>
+													<td>ID</td>
+												</tr>
+											</thead>
+											<tbody>
+												<tr *ngFor="let actions of selectedActions">
+													<td>{{actions.action.name}}</td>
+													<td>{{actions.action.id}}</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row save-delete" style="margin-left: 78%;" *ngIf="selectedResponses.length != 0">
+						</div>
+						<div class="row save" *ngIf="selectedResponses.length == 0">
+						</div>
+						<div class="rightbar"></div>
+					</div>
+				</div>
+			</div>
+			<!--  Decision Div -->
+			<div *ngIf="viewDecision" align="Left" class="subDiv">
+				<div class="row">
+					<div class="col-2 right-sidebar">
+						<ul class="list-group">
+							<a class="list-group-item right-sidebar-icon" tooltip="Decision" placement="left"> <i
+								class="fa fa-fw fa fa-home fa-lg"></i>
+							</a>
+							<a class="list-group-item right-sidebar-icon" tooltip="Values" placement="left"> <i
+								class="fa fa-fw fa fa-info fa-lg"></i>
+							</a>
+						</ul>
+						<div class="rightbar"></div>
+					</div>
+					<div class="col-10">
+						<div class="row" style="margin-top: 15px;">
+							<div class="col-8">
+								<label class="col control-label labelFont ">CONDITION</label>
+							</div>
+							<div class="col-2" align="Right">
+								<a href="javascript:;" class="close-right-view" aria-hidden="true" (click)="closeRightView()">x</a>
+							</div>
+						</div>
+						<div class="heading-line" id="responsehome"></div>
+						<div class="" style="height: 100%; overflow-y: scroll;" (clickOutside)="onClickedOutsideDecision($event)">
+							<div class="col-md-12 side-menu-item-space" (click)="onClickedInsideDecision()">
+								<!-- decision view -->
+								<div class="">
+									<div class="">
+										<div class="form-group">
+											<input type="text" class="form-control " placeholder="Type your condition here" name="condition" id="condition" #condition="ngModel" [(ngModel)]="exp" (ngModelChange)="validateExpression(exp)" autocomplete="off" >
+											<div *ngIf="condition.errors && (condition.dirty || condition.persistent)">
+												<div [hidden]="!condition.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Condition is required.</div>
+											</div>
+											<div *ngIf="conditions.length != 0  && showError">
+												<div class="" *ngFor="let item of conditions; let i = index">
+													<div class="list-group-item" style="margin-bottom: 0; padding: 0.5rem 1.25rem" ><a href="javascript:;" (click)="addexpression(item.name)">{{item.name}}</a></div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row save-delete" style="margin-left: 78%;" *ngIf="selectedResponses.length != 0">
+						</div>
+						<div class="row save" *ngIf="selectedResponses.length == 0">
+						</div>
+						<div class="rightbar"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Dummy Right-Sidebar Views-->
+		<div class="col-4" *ngIf="!rightSideView" style="background: #ffffff; margin-top: -15px;"></div>
+	</div>
+	<!-- Modals  -->
+	<div class="">
+		<!--  Create Entity-->
+		<ng-template #createEntityModal let-c="close" let-d="dismiss">
+			<div class="" *ngIf="!showAddRegExModal && !showRegExWarningMessage">
+				<div class="modal-dialog local-modal-dialogue">
+					<div class="modal-content">
+						<form #entityForm="ngForm">
+							<div class="modal-header local-modal-content-header">
+								<h1 class="modal-title">Create Entity</h1>
+							</div>
+							<div class="modal-body local-modal-content-body">
+								<!-- Entity	Name -->
+								<div class="col-md-12">
+									<div class="row form-group">
+										<div class="col-4">
+											<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Entity
+											Name<span style="color: red">*</span>
+										</label>
+										</div>
+										<div class="col-8 " style="margin-bottom: 10px;">
+											<input type="text" class="form-control" maxlength="25"  style="margin-top: 8px; font-size: 10pt;" placeholder="Entity Name" name="entityNewName" id="entityNewName" #entityNewName="ngModel" [(ngModel)]="entityNew.name"
+											  required>
+											<div *ngIf="entityNewName.errors && (entityNewName.dirty || entityNewName.persistent)">
+												<div [hidden]="!entityNewName.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Entity name required.</div>
+												<div [hidden]="!entityNewName.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Entity name should be only alphanumeric.</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<!-- Entity Type -->
+								<div class="col-md-12">
+									<div class="form-group">
+										<label class="col control-label side-menu-field-header">Select Entity Type <span style="color: red">*</span></label>
+										<div class="col">
+											<select class="form-control selectpicker" data-size="10" data-live-search="false" data-style="btn-white" id="entity" [(ngModel)]="entityNew.entityType" #entityType="ngModel" name="entityType" (change)="onEntityTypeChange($event)">
+												<option *ngFor="let entityType of entityTypeLst"
+													[value]="entityType.entityType">{{entityType.entityTypeName}}
+												</option>
+											</select>
+										</div>
+									</div>
+								</div>
+								<!-- Question Title EILS & ELS-->
+								<div class="col-md-12" *ngIf="(entityNew.entityType == 'EILS') || (entityNew.entityType == 'ELS') || (entityNew.entityType == 'EQRP')">
+									<div class="row form-group">
+										<div class="col-4">
+											<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">
+											Title<span style="color: red">*</span>
+										</label>
+										</div>
+										<div class="col-8 " style="margin-bottom: 10px;">
+											<input type="text" class="form-control" style="margin-top: 8px; font-size: 10pt;" placeholder="Title" name="entityQuestionTitles" [(ngModel)]="entityQuestionTitle" (focusout)=copyTitileToPayLooad(entityNew) required>
+										</div>
+									</div>
+								</div>
+								<!-- Sub Title EILS & ELS-->
+								<div class="col-md-12" *ngIf="(entityNew.entityType == 'EILS') || (entityNew.entityType == 'ELS')">
+									<div class="row form-group">
+										<div class="col-4">
+											<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">
+											Sub Title<span style="color: red">*</span>
+										</label>
+										</div>
+										<div class="col-8 " style="margin-bottom: 10px;">
+											<input type="text" class="form-control" style="margin-top: 8px; font-size: 10pt;" placeholder="Sub Title" name="entityQuestionSubTitle" [(ngModel)]="entityQuestionSubTitle" required>
+										</div>
+									</div>
+								</div>
+								<!-- Button Text EILS & ELS-->
+								<div class="col-md-12" *ngIf="(entityNew.entityType == 'EILS') || (entityNew.entityType == 'ELS') || (entityNew.entityType == 'EQRP')">
+									<div class="row form-group">
+										<div class="col-4">
+											<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">
+											Payload<span style="color: red">*</span>
+										</label>
+										</div>
+										<div class="col-8 " style="margin-bottom: 10px;">
+											<input type="text" class="form-control" style="margin-top: 8px; font-size: 10pt;" placeholder="Payload" name="entityButtonText" [(ngModel)]="entityButtonText" required>
+										</div>
+									</div>
+								</div>
+								<!-- Image Url EILS-->
+								<div class="col-md-12" *ngIf="entityNew.entityType == 'EILS'">
+									<div class="row form-group">
+										<div class="col-4">
+											<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">
+											Image Url<span style="color: red">*</span>
+										</label>
+										</div>
+										<div class="col-8 " style="margin-bottom: 10px;">
+											<input type="text" class="form-control" style="margin-top: 8px; font-size: 10pt;" placeholder="Image Url" name="entityImageUrl" [(ngModel)]="entityImageUrl" required>
+										</div>
+									</div>
+								</div>
+								<!-- ONLY ENGLISH -->
+								<div class="col-md-12" *ngIf="!enableArabicLang">
+									<div style="padding: 0px;">
+										<!-- Example -->
+										<div class="side-menu-item-space">
+											<div class="form-group">
+												<label class="col control-label side-menu-field-header">Example</label>
+												<div class="col">
+													<input type="text" class="form-control side-menu-field-font"  placeholder="Example" name="entityEnglishExampleErrors" id="entityEnglishExampleErrors" #entityEnglishExampleErrors="ngModel" [(ngModel)]="entityEnglishExample">
+													<div *ngIf="entityEnglishExampleErrors.errors">
+														<div [hidden]="!entityEnglishExampleErrors.errors.pattern" class="alert alert-danger">Example can have only letters numbers  </div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<!-- Questions -->
+										<div style="width: 100%">
+											<div class="col-md-12">
+												<div class="form-group">
+													<label class="col control-label side-menu-field-header">Questions <span style="color: red">*</span></label>
+													<div class="col">
+														<tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" [(ngModel)]='questionsTag' class="side-menu-field-font" name="questions" placeholder="Enter Questions" secondaryPlaceholder="Enter Questions" (onAdd)="createQuestion($event, entityEnglishExample)"
+														  (onRemove)="sliceQuestionFromList($event)" [errorMessages]="errorMessages" [validators]="genValidators">
+														</tag-input>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<!-- ENGLISH  & ARABIC -->
+								<div class="col-md-12" style="padding: 0px 15px 0px 15px;" *ngIf="enableArabicLang">
+									<tabset>
+										<!-- Warning  -->
+										<div class="" style="margin-top: -28px; margin-left: 115px;">
+											<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="createEntityLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+											<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!createEntityLangWarning"></i>
+										</div>
+										<!-- English Tab-->
+										<tab heading='English' style="border: 1px solid #d0cfcf;">
+											<div style="padding: 0px;">
+												<!-- Example -->
+												<div class="side-menu-item-space">
+													<div class="form-group">
+														<label class="col control-label side-menu-field-header">Example</label>
+														<div class="col">
+															<input type="text" class="form-control side-menu-field-font" placeholder="Example" name="entityEnglishExampleErrors"  id="entityEnglishExampleErrors" #entityEnglishExampleErrors="ngModel" [(ngModel)]="entityNew.example" (focusout)="checkArabicCreateEntity()">
+															<div *ngIf="entityEnglishExampleErrors.errors">
+																<div [hidden]="!entityEnglishExampleErrors.errors.pattern" class="alert alert-danger">Example can have only letters numbers and symbols '</div>
+															</div>
+														</div>
+													</div>
+												</div>
+												<!-- Questions -->
+												<div style="width: 100%">
+													<div class=" side-menu-item-space">
+														<div class="form-group">
+															<label class="col control-label side-menu-field-header">Questions <span style="color: red">*</span></label>
+															<div class="col">
+																<tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" [(ngModel)]='questionsTag' class="side-menu-field-font" name="questions" placeholder="Enter Questions" secondaryPlaceholder="Enter Questions" (onAdd)="createQuestion($event, entityNew.example); checkArabicCreateEntity();"
+																  (onRemove)="sliceQuestionFromList($event)" [errorMessages]="errorMessages" [validators]="genValidators">
+																</tag-input>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</tab>
+										<!-- Arabic Tab-->
+										<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+											<div style="padding: 0px;">
+												<!-- Example -->
+												<div class=" side-menu-item-space">
+													<div class="form-group">
+														<label class="col control-label side-menu-field-header">Example</label>
+														<div class="col">
+															<input type="text" class="form-control side-menu-field-font" placeholder="Example" name="entityArabicExampleError"  id="entityArabicExampleError" #entityArabicExampleError="ngModel" [(ngModel)]="entityArabicExample" (focusout)="checkArabicCreateEntity()">
+															<div *ngIf="entityArabicExampleError.errors">
+																<div [hidden]="!entityArabicExampleError.errors.pattern" class="alert alert-danger">Arabic Example can have only letters numbers and ' ? _ </div>
+															</div>
+														</div>
+													</div>
+												</div>
+												<!-- Questions -->
+												<div class="side-menu-item-space">
+													<div class="form-group">
+														<label class="col control-label side-menu-field-header">Questions <span style="color: red">*</span></label>
+														<div class="col">
+															<tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" [(ngModel)]='questionsArabicTag' class="side-menu-field-font" name="questionsArabic" placeholder="Enter Questions" secondaryPlaceholder="Enter Questions" (onAdd)="createArabicQuestion($event, entityArabicExample); checkArabicCreateEntity();"
+															  (onRemove)="sliceQuestionFromList($event); checkArabicCreateEntity();" [errorMessages]="arabicErrorMessages" [validators]="arabicGenValidators">
+															</tag-input>
+														</div>
+													</div>
+												</div>
+											</div>
+										</tab>
+									</tabset>
+								</div>
+								<!-- Required -->
+								<div class="col-md-12">
+									<div class="row ">
+										<div class="col-4">
+											<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Required</label>
+										</div>
+										<div class="col-8" style="padding: 12px 0px 0px 65px;">
+											<ui-switch [(ngModel)]="entityRequired" (change)="onRequiredChangeNew($event)" name="entityRequired" size="small"></ui-switch>
+										</div>
+									</div>
+								</div>
+
+								<div class="col-md-12">
+									<div class=" row form-group">
+										<div class="col-4">
+											<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Entity Result<span style="color: red">*</span></label>
+										</div>
+										<div class="col-8" style="margin-bottom: 10px;">
+											<div class="btn-group">
+												<label class="btn btn-info" [(ngModel)]="entityNew.dataType" btnRadio="NUMERIC" name="numeric" tabindex="0" role="button">Number</label>
+												<label class="btn btn-info" [(ngModel)]="entityNew.dataType" btnRadio="STRING" name="string" tabindex="0" role="button">String</label>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<!-- GEN -> Regular 	Expression -->
+								<div class="col-md-12" *ngIf="entityNew.entityType == 'GEN'">
+									<div class="form-group">
+										<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Regular
+										Expression</label>
+										<div class="row">
+											<div class="col-10" style="padding-left: 16px;" (click)="triggerScrollTo('regexs')">
+												<angular2-multiselect [data]="dropdownList" [(ngModel)]="selectedItems" name="selectedRegexs" [settings]="dropdownSettings" (onSelect)="onItemSelect(modalAddRegEx,$event)" (onDeSelect)="OnItemDeSelect($event)" [selectedItems]="selectedItems" (onSelectAll)="onSelectAll($event)"
+												  style="font-size: 10pt" (onDeSelectAll)="onDeSelectAll($event)"></angular2-multiselect>
+											</div>
+											<div class="col-2">
+												<button type="submit" class="btn btn-md btn-primary btn-block" style="margin-right: 6px;" (click)="showRegEx()">
+												<i class="fa fa-plus"></i>
+											</button>
+											</div>
+										</div>
+									</div>
+								</div>
+								<!-- EXTERNAL LIST -> image service -->
+								<div class="col-md-12" id="entityregex" *ngIf="(entityNew.entityType == 'EILS') || (entityNew.entityType == 'ELS') || (entityNew.entityType == 'EQRP')">
+									<label class="col control-label labelFont">EXTERNAL LIST</label>
+									<div class="heading-line"></div>
+									<!-- Call Method -->
+									<div class="form-group side-menu-item-space">
+										<label class="col control-label side-menu-field-header">Call Method <span style="color: red">*</span></label>
+										<div class="col">
+											<select class="form-control selectpicker " id="callMethod" [(ngModel)]="entityAction.callMethod" #entityActioncallMethod="ngModel" name="entityActionCallMethod" required>
+													<option *ngFor="let type of callMethods"  [ngValue]="type">{{type}}</option>
+												</select>
+										</div>
+									</div>
+									<!-- Success Code -->
+									<div class="form-group side-menu-item-space ">
+										<label class="col control-label side-menu-field-header">Success Code</label>
+										<div class="col">
+											<input type="text" class="form-control side-menu-field-font" placeholder="Success Code" name="successCode" id="successCode" #successCode="ngModel" [(ngModel)]="entityAction.successCode">
+										</div>
+									</div>
+									<!-- ONLY ENGLISH Service URL & Request Body-->
+									<div class="" *ngIf="!enableArabicLang">
+										<!-- Service URL -->
+										<div class="form-group side-menu-item-space ">
+											<label class="col control-label side-menu-field-header">Service URL <span style="color: red">*</span></label>
+											<div class="col">
+												<input type="text" class="form-control side-menu-field-font" placeholder="Service URL" name="entityActionUrl" id="entityActionUrl" #entityActionUrl="ngModel" pattern="(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?" [(ngModel)]="entityAction.url"
+												  required>
+												<div *ngIf="entityActionUrl.errors  && (entityActionUrl.dirty || entityActionUrl.persistent)">
+													<div [hidden]="!entityActionUrl.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Service URL required.</div>
+													<div [hidden]="!entityActionUrl.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Please enter valid Service URL</div>
+												</div>
+											</div>
+										</div>
+										<!-- Request Body -->
+										<div class="form-group side-menu-item-space" *ngIf="entityAction.callMethod == 'POST'">
+											<label class="col control-label side-menu-field-header">Request Body</label>
+											<div class="col">
+												<label class="col control-label " style="font-size: 8pt;">Example:
+														{{requestBodySample}}</label> <input type="text" class="form-control side-menu-field-font" placeholder="Request Body" style="height: 30px; " name="entityActionRequestBody" id="url" #entityActionRequestBody="ngModel" [(ngModel)]="entityAction.requestBody">
+											</div>
+										</div>
+									</div>
+									<!-- ENGLISH  & ARABIC Service URL & Request Body-->
+									<div class="" *ngIf="enableArabicLang">
+										<tabset>
+											<!-- Warning  -->
+											<div class="" style="margin-top: -28px; margin-left: 115px;">
+												<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="createEntityActionLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+												<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!createEntityActionLangWarning"></i>
+											</div>
+											<!-- English -->
+											<tab heading='English' style="border: 1px solid #d0cfcf;">
+												<!-- Service URL -->
+												<div class="form-group side-menu-item-space ">
+													<label class="col control-label side-menu-field-header">Service URL <span style="color: red">*</span></label>
+													<div class="col">
+														<input type="text" class="form-control side-menu-field-font" placeholder="Service URL" name="entityActionUrl" id="entityActionUrl" #entityActionUrl="ngModel" pattern="(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?" [(ngModel)]="entityAction.url"
+														  (focusout)="checkCreateEntityActionLangWarning()" required>
+														<div *ngIf="entityActionUrl.errors  && (entityActionUrl.dirty || entityActionUrl.persistent)">
+															<div [hidden]="!entityActionUrl.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Service URL required.</div>
+															<div [hidden]="!entityActionUrl.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Please enter valid Service URL</div>
+														</div>
+													</div>
+												</div>
+												<!-- Request Body -->
+												<div class="form-group side-menu-item-space" *ngIf="entityAction.callMethod == 'POST'">
+													<label class="col control-label side-menu-field-header">Request Body</label>
+													<div class="col">
+														<label class="col control-label " style="font-size: 8pt;">Example:
+		 														{{requestBodySample}}</label> <input type="text" class="form-control side-menu-field-font" placeholder="Request Body" style="height: 30px; " name="entityActionRequestBody" id="url" #entityActionRequestBody="ngModel" [(ngModel)]="entityAction.requestBody">
+													</div>
+												</div>
+											</tab>
+											<!-- Arabic -->
+											<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+												<!-- Service URL -->
+												<div class="form-group side-menu-item-space ">
+													<label class="col control-label side-menu-field-header">Service URL <span style="color: red">*</span></label>
+													<div class="col">
+														<input type="text" class="form-control side-menu-field-font" placeholder="Service URL" name="entityArabicActionUrl" id="entityArabicActionUrl" #entityArabicActionUrl="ngModel" pattern="(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?"
+														  [(ngModel)]="entityAction.arabicUrl" (focusout)="checkCreateEntityActionLangWarning()">
+														<div *ngIf="entityArabicActionUrl.errors  && (entityArabicActionUrl.dirty || entityArabicActionUrl.persistent)">
+															<div [hidden]="!entityArabicActionUrl.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Service URL required.</div>
+															<div [hidden]="!entityArabicActionUrl.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Please enter valid Service URL</div>
+														</div>
+													</div>
+												</div>
+												<!-- Request Body -->
+												<div class="form-group side-menu-item-space" *ngIf="entityAction.callMethod == 'POST'">
+													<label class="col control-label side-menu-field-header">Request Body</label>
+													<div class="col">
+														<label class="col control-label " style="font-size: 8pt;">Example:
+																{{requestBodySample}}</label> <input type="text" class="form-control side-menu-field-font" placeholder="Request Body" style="height: 30px; " name="entityActionArabicRequestBody" id="url" #entityActionArabicRequestBody="ngModel"
+														  [(ngModel)]="entityAction.arabicRequestBody">
+													</div>
+												</div>
+											</tab>
+										</tabset>
+									</div>
+								</div>
+								<!-- ERROR  -->
+								<div class="col-md-12" id="entityregex" *ngIf="(entityNew.entityType == 'EILS') || (entityNew.entityType == 'ELS') || (entityNew.entityType == 'EQRP')">
+									<label class="col control-label labelFont ">ERROR</label>
+									<div class="heading-line"></div>
+									<!-- Error Node -->
+									<div class="form-group side-menu-item-space">
+										<label class="col control-label side-menu-field-header">Error Node </label>
+										<div class="col">
+											<input type="text" class="form-control side-menu-field-font" placeholder="Error Code" name="errorCode" id="errorCode" #errorCode="ngModel" [(ngModel)]="entityAction.errorCode">
+										</div>
+									</div>
+								</div>
+								<!-- Error Responses -->
+								<div class="col-md-12" id="entityregex" *ngIf="(entityNew.entityType == 'EILS') || (entityNew.entityType == 'ELS') || (entityNew.entityType == 'EQRP')">
+									<div class="form-group">
+										<label class="col control-label side-menu-field-header">Error Responses</label>
+										<!-- Error Responses ENGLISH -->
+										<div class="row" style="margin: 2px 2px 12px 2px;" *ngIf="!enableArabicLang">
+											<div class="col-3">
+												<input type="text" [(ngModel)]="er.code" class="form-control side-menu-field-font" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+											</div>
+											<div class="col-6">
+												<input type="text " [(ngModel)]="er.message" class="form-control side-menu-field-font" placeholder="Error Response Message" name="errorResponseMessage" id="errorResponseMessage" />
+
+											</div>
+											<div class="col-2">
+												<button id="b1" class="form-control plus-error" style="padding-left: 14px;" (click)="addErrorResponse(er)" class="btn btn-md btn-primary btn-block " [disabled]="!entityAction.errorCode" type="button">
+													<i class="fa fa-plus"></i>
+												</button>
+											</div>
+										</div>
+										<!-- Error Responses English  & Arabic-->
+										<div class="" *ngIf="enableArabicLang">
+											<tabset>
+												<!-- Warning  -->
+												<div class="" style="margin-top: -28px; margin-left: 115px;">
+													<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateActionLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+													<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateActionLangWarning"></i>
+												</div>
+												<!-- English -->
+												<tab heading='English' style="border: 1px solid #d0cfcf;">
+													<div class="row" style="padding: 0px;">
+														<div class="col-4">
+															<input type="text" [(ngModel)]="er.code" class="form-control side-menu-field-font" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+														</div>
+														<div class="col-6">
+															<input type="text " [(ngModel)]="er.message" class="form-control side-menu-field-font" placeholder="Error Response" name="errorResponseMessage" id="errorResponseMessage" />
+
+														</div>
+														<div class="col-2">
+															<button id="b1" class="form-control plus-error" style="padding-left: 14px;" (click)="addErrorResponse(er)" class="btn btn-md btn-primary btn-block " [disabled]="!entityAction.errorCode" type="button">
+																<i class="fa fa-plus"></i>
+															</button>
+														</div>
+													</div>
+												</tab>
+												<!-- Arabic -->
+												<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+													<div class="row" style="padding: 0px;">
+														<div class="col-4">
+															<input type="text" [(ngModel)]="er.code" class="form-control side-menu-field-font" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+														</div>
+														<div class="col-6">
+															<input type="text " [(ngModel)]="er.message" class="form-control side-menu-field-font" placeholder="Error Response " name="errorResponseMessage" id="errorResponseMessage" />
+
+														</div>
+														<div class="col-2">
+															<button id="b1" class="form-control plus-error" style="padding-left: 14px;" (click)="addErrorResponseArabic(er)" class="btn btn-md btn-primary btn-block " [disabled]="!entityAction.errorCode" type="button">
+																<i class="fa fa-plus"></i>
+															</button>
+														</div>
+													</div>
+												</tab>
+											</tabset>
+										</div>
+										<div class="col">
+											<div class="" *ngIf="erResponses.length !=0">
+												<div class="row">
+													<div class="col pull-right"></div>
+												</div>
+												<table id="data-table" class="table table-striped table-bordered">
+													<thead>
+														<tr>
+															<td style="font-size: 9pt; width: 30%">Error Code</td>
+															<td style="font-size: 9pt;">Error Message</td>
+															<td style="font-size: 9pt;">Language</td>
+															<td></td>
+														</tr>
+													</thead>
+													<tbody>
+														<tr class="odd gradeA" *ngFor="let er of erResponses">
+															<td style="font-size: 8pt;">{{er.errorCode}}</td>
+															<td style="font-size: 8pt;">{{er.errorResponse}}</td>
+															<td style="font-size: 8pt;">{{er.localeCode}}</td>
+															<td><a href="javascript:;" (click)="removeErrorResponse(er)" style="color: #ff5b57; text-decoration: none;"> <i
+																	class="fa fa-trash pull-right"></i>
+															</a></td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+								<!-- div for regexs scroll -->
+								<div id=regexs></div>
+							</div>
+							<div class="modal-footer local-modal-footer" style="padding-right: 6px">
+								<a href="javascript:;" class="btn btn-md btn-white " style="font-size: 11pt" (click)="removeObject()">Cancel</a>
+								<button type="submit" class="btn btn-md btn-primary " style="font-size: 11pt; font-family: Arial;" [disabled]="!entityForm.form.valid" (click)="createNewEntity(entityNew)">Create</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- Regular Expression Modal -->
+			<div *ngIf="showAddRegExModal && !showRegExWarningMessage">
+				<div class="modal-dialog local-modal-dialogue">
+					<div class="modal-content">
+						<form #regExCreateForm="ngForm" (ngSubmit)="createEntityRegEx(regEx); regExCreateForm.reset()">
+							<div class="modal-header local-modal-content-header">
+								<h1 class="modal-title">Create Regular Expression</h1>
+							</div>
+							<div class="modal-body local-modal-content-body">
+								<div class="col-md-12 form-group" style="padding-bottom: 10px;">
+									<div class="row">
+										<div class=col-4>
+											<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Name<span
+											style="color: red">*</span>
+										</label>
+										</div>
+										<div class="col-8">
+											<input type="text" class="form-control" placeholder="Regular Expression Name" style="margin-top: 8px; font-size: 10pt;" name="regularExpressionName" id="regularExpressionName" #regularExpressionName="ngModel" [(ngModel)]="regEx.regexname" required>
+											<div *ngIf="regularExpressionName.errors && (regularExpressionName.dirty)">
+												<div [hidden]="!regularExpressionName.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Regular Expression Name required.</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="col-md-12 form-group" style="padding-bottom: 10px;">
+									<div class="row">
+										<div class=col-4>
+											<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Expression<span
+											style="color: red">*</span></label>
+										</div>
+										<div class="col-8">
+											<input type="text" class="form-control" placeholder="Regular Expression" style="margin-top: 8px; font-size: 10pt;" name="regularExpression" id="regularExpression" #regularExpression="ngModel" [(ngModel)]="regEx.expression" required>
+											<div *ngIf="regularExpression.errors && (regularExpression.dirty)">
+												<div [hidden]="!regularExpression.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Regular Expression required.</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="col-md-12 form-group" style="padding-bottom: 10px;">
+									<div class="row">
+										<div class=col-4>
+											<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Error
+											Message<span style="color: red">*</span>
+										</label>
+										</div>
+										<div class="col-8" *ngIf="!enableArabicLang">
+											<input type="text" class="form-control" placeholder="Error Message" style="margin-top: 8px; font-size: 10pt;" name="errorMessage" id="errorMessage" #errorMessage="ngModel" [(ngModel)]="errorMessageRegExs" required>
+											<div *ngIf="errorMessage.errors && (errorMessage.dirty )">
+												<div [hidden]="!errorMessage.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Error message required.</div>
+											</div>
+										</div>
+										<div class="col-8" *ngIf="enableArabicLang">
+											<tabset>
+												<div class="" style="margin-top: -28px; margin-left: 115px;">
+													<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateRegexLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+													<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateRegexLangWarning"></i>
+												</div>
+												<tab heading='English' style="border: 1px solid #d0cfcf;">
+													<div style="padding: 0px;">
+														<input type="text" class="form-control" style="margin-top: 8px; font-size: 10pt;" placeholder="Error Message" name="errorMessage" id="errorMessage" #errorMessage="ngModel" [(ngModel)]="errorMessageRegExs" required (focusout)="checkArabicCreateRegExs()">
+														<div *ngIf="errorMessage.errors && (errorMessage.dirty)">
+															<div [hidden]="!errorMessage.errors.required" style="margin-bottom: 0; padding: 0.5rem 1.25rem" class="alert alert-danger field-error">Error Message required.
+															</div>
+														</div>
+														<!-- <input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageEnglish" (focusout)="checkArabicUpdateAction()"> -->
+													</div>
+												</tab>
+												<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+													<div style="padding: 0px;">
+														<input type="text" class="form-control" style="margin-top: 8px; font-size: 10pt;" placeholder="Error Message" name="errorMessage" id="errorMessage" #errorMessage="ngModel" [(ngModel)]="arabicErrorMessageRegExs">
+														<div *ngIf="errorMessage.errors && (errorMessage.dirty)">
+															<div [hidden]="!errorMessage.errors.required" style="margin-bottom: 0; padding: 0.5rem 1.25rem" class="alert alert-danger field-error">Error Message required.
+															</div>
+														</div>
+														<!-- <input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageEnglish" (focusout)="checkArabicUpdateAction()"> -->
+													</div>
+												</tab>
+											</tabset>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer local-modal-footer" style="padding-right: 6px">
+								<div class="">
+									<a href="javascript:;" class="btn btn-sm btn-white" style="font-size: 11pt" data-dismiss="modal" (click)=hideAddRegexView()>Cancel</a>
+									<button type="submit" style="font-size: 11pt; font-family: Arial;" class="btn btn-md btn-primary" [disabled]="!regExCreateForm.form.valid">Create</button>
+								</div>
+							</div>
+
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="" *ngIf="showRegExWarningMessage && !showAddRegExModal">
+				<div class="modal-dialog local-modal-dialogue">
+					<div class="modal-content">
+						<div class="modal-header local-modal-header">
+							<h1 class="modal-title">Regular Expression Warning</h1>
+						</div>
+						<div class="modal-body local-modal-body">
+							<label class="col control-label modalcontent">This Regular Expression is used in more than one Entity in this Mapping. Do you want to continue?</label>
+
+						</div>
+						<div class="modal-footer local-modal-footer">
+							<a href="javascript:;" class="btn btn-sm btn-danger" (click)="addRegEX()">Yes</a>
+							<a href="javascript:;" class="btn btn-sm btn-white" (click)="removeRegex()">No</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</ng-template>
+		<!--  Create Action-->
+		<ng-template #createAction let-c="close" let-d="dismiss">
+			<div class="modal-dialog local-modal-dialogue">
+				<div class="modal-content">
+					<form #actionForm="ngForm">
+						<div class="modal-header local-modal-content-header">
+							<h1 class="modal-title">Create Action</h1>
+						</div>
+						<div class="modal-body local-modal-content-body">
+
+							<div class="col-md-12">
+								<div class="row form-group">
+									<div class="col-4">
+										<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Action Name <span
+										style="color: red">*</span>
+									</label>
+									</div>
+									<div class="col-8" style="margin-bottom: 10px;">
+										<input type="text" class="form-control" maxlength="25" pattern="^[a-zA-Z0-9][A-Za-z0-9 ]*$" style="margin-top: 8px; font-size: 10pt;" placeholder="Action Name" name="actionName" id="actionName" #actionName="ngModel" [(ngModel)]="action.name" required>
+										<div *ngIf="actionName.errors  && (actionName.dirty || actionName.persistent)">
+											<div [hidden]="!actionName.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Action name required.</div>
+											<div [hidden]="!actionName.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Action name can have only letters and numbers.</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-md-12">
+								<div class=" row form-group">
+									<div class="col-4">
+										<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Call Method <span style="color: red">*</span></label>
+									</div>
+									<div class="col-8" style="margin-bottom: 10px;">
+										<select class="form-control selectpicker" data-size="10" data-live-search="false" data-style="btn-white" id="callMethod"  style="font-size: 10pt;" [(ngModel)]="action.callMethod" #callMethod="ngModel" name="callMethod" required>
+										<option *ngFor="let type of callMethods" [ngValue]="type">{{type}}</option>
+									</select>
+									</div>
+								</div>
+							</div>
+
+							<div class="" *ngIf="!enableArabicLang">
+								<div class="col-md-12">
+									<div class="row form-group">
+										<div class="col-4">
+											<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Service URL
+												<span	style="color: red">*</span></label>
+										</div>
+										<div class="col-8" style="margin-bottom: 10px;">
+											<input type="text" class="form-control" style="font-size: 10pt;" placeholder="Service URL" name="actionUrl" pattern="(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?" id="actionUrl" #actionUrl="ngModel" [(ngModel)]="action.url"
+											  required>
+											<div *ngIf="actionUrl.errors  && (actionUrl.dirty || actionUrl.persistent)">
+												<div [hidden]="!actionUrl.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Service URL required.</div>
+												<div [hidden]="!actionUrl.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Please enter valid Service URL</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- ENGLISH  & ARABIC -->
+							<div class="col-md-12" style="padding: 0px 8px 0px 8px;" *ngIf="enableArabicLang">
+								<tabset>
+									<!-- Warning  -->
+									<div class="" style="margin-top: -28px; margin-left: 115px;">
+										<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="createActionUrlLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+										<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!createActionUrlLangWarning"></i>
+									</div>
+									<!-- English Tab-->
+									<tab heading='English' style="border: 1px solid #d0cfcf;">
+										<div style="padding: 0px;">
+											<!-- Service URL -->
+											<div class="row form-group side-menu-item-space ">
+												<label class="col-4 control-label side-menu-field-header">Service URL <span style="color: red">*</span></label>
+												<div class="col-8">
+													<input type="text" class="form-control side-menu-field-font" placeholder="Service URL" #englishActionUrls="ngModel" name="englishActionUrls" pattern="(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?" [(ngModel)]="action.url"
+													  (focusout)="checkArabicUrlCreateAction()" required>
+													<div *ngIf="englishActionUrls.errors  && (englishActionUrls.dirty || englishActionUrls.persistent)">
+														<div [hidden]="!englishActionUrls.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Service URL required.</div>
+														<div [hidden]="!englishActionUrls.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Please enter valid Service URL</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</tab>
+									<!-- Arabic Tab-->
+									<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+										<div style="padding: 0px;">
+											<!-- Service URL -->
+											<div class="row form-group side-menu-item-space ">
+												<label class="col-4 control-label side-menu-field-header">Service URL <span style="color: red">*</span></label>
+												<div class="col-8">
+													<input type="text" class="form-control side-menu-field-font" placeholder="Service URL" name="arabicActionUrl" id="arabicAction" #arabicAction="ngModel" pattern="(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?" [(ngModel)]="arabicActionUrl"
+													  (focusout)="checkArabicUrlCreateAction()">
+													<div *ngIf="arabicAction.errors  && (arabicAction.dirty || arabicAction.persistent)">
+														<div [hidden]="!arabicAction.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Service URL required.</div>
+														<div [hidden]="!arabicAction.errors.pattern" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Please enter valid Service URL</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</tab>
+								</tabset>
+							</div>
+
+							<!-- Service Type -->
+							<div class="col-md-12" *ngIf="action.callMethod == 'POST'">
+								<div class=" row form-group" style="margin-top: 20px;">
+									<div class="col-4">
+										<label class="col control-label" style="font-size: 11pt;">Service
+										Type <span style="color: red">*</span>
+									</label>
+									</div>
+									<div class="col-8" style="margin-bottom: 10px;">
+										<select class="form-control selectpicker" data-size="10" data-live-search="false" data-style="btn-white" id="serviceType"  style="font-size: 10pt;" [(ngModel)]="action.serviceType" #serviceTypes="ngModel" name="serviceTypes" required (change)="onActionTypeChange($event.target.value)">
+										<option *ngFor="let types of serviceType" [ngValue]="types">{{types}}</option>
+									</select>
+									</div>
+								</div>
+							</div>
+
+							<!-- Headers -->
+							<div class="col-md-12 form-group" *ngIf="((action.serviceType == 'multipart/form-data' || action.serviceType == 'x-www-form-urlencoded' || action.serviceType == 'json') && (action.callMethod == 'POST'))">
+								<label class="col control-label labelFont">Headers</label>
+								<div class="col">
+									<div class="row">
+										<div class="col-5">
+											<input type="text" [(ngModel)]="header.header_key" class="form-control"  placeholder="Headers Key" name="headerKey" id="headerKey" />
+										</div>
+										<div class="col-5">
+											<input type="text" [(ngModel)]="header.header_value" class="form-control"  placeholder="Header Value" name="headerValues" id="headerValues" />
+										</div>
+										<div class="col-2">
+											<button id="b1" class="form-control"  (click)="addHeaders(header)" class="btn btn-md btn-primary btn-block" type="button">
+											<i class="fa fa-plus"
+												style="margin-left: -4px; margin-top: 1px;"></i>
+										</button>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Headers Show Box-->
+							<div class="col-md-12 form-group" *ngIf="((action.serviceType == 'multipart/form-data' || action.serviceType == 'x-www-form-urlencoded' || action.serviceType == 'json') && (action.callMethod == 'POST'))">
+								<div class="row form-group">
+										<div class="table-responsive" style="padding: 10px 14px 0px 14px;">
+											<table id="data-table" class="table table-striped table-bordered">
+												<thead>
+													<tr>
+														<th style="font-size: 8pt;">Header Key</th>
+														<th style="font-size: 8pt;">Header Value</th>
+														<th></th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr class="odd gradeA" *ngFor="let item of headers">
+														<td style="font-size: 8pt;">{{item.header_key}}</td>
+														<td style="font-size: 8pt;">{{item.header_value}}</td>
+														<td><a (click)="removeHeaders(header)" style="color: #ff5b57; text-decoration: none;"><i
+															class="fa fa-trash pull-right"></i></a></td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+								</div>
+							</div>
+
+							<!-- Request Params -->
+							<div class="col-md-12 form-group" *ngIf="((action.serviceType == 'multipart/form-data' || action.serviceType == 'x-www-form-urlencoded') && (action.callMethod == 'POST'))">
+								<label class="col control-label labelFont">Request Params</label>
+								<div class="col">
+									<div class="row">
+										<div class="col-4">
+											<input type="text" [(ngModel)]="requestParam.entitykey" class="form-control" style="font-size: 8pt;" placeholder="Entity Key" name="entityKey" id="entityKey" />
+										</div>
+										<div class="col-4" >
+											<input type="text" [(ngModel)]="requestParam.entityvalue" class="form-control"  placeholder="Entity Value" name="entityValues" id="entityValues" />
+										</div>
+										<div class="col-2"  *ngIf="action.serviceType == 'multipart/form-data'">
+											<select class="form-control selectpicker" data-size="10" data-live-search="false" data-style="btn-white" id="importType" name="importType"  [(ngModel)]="requestParam.importType" #callMethod="ngModel"
+											  name="importType">
+											<option *ngFor="let type of importType" [ngValue]="type">{{type}}</option>
+										</select>
+										</div>
+										<div class="col-2">
+											<button id="b1" class="form-control"   (click)="addRequestParams(requestParam)" class="btn btn-md btn-primary btn-block" type="button">
+											<i class="fa fa-plus"
+												style="margin-left: -4px; margin-top: 1px;"></i>
+										</button>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Request Params Show Box-->
+							<div class="col-md-12 form-group" *ngIf="((action.serviceType == 'multipart/form-data' || action.serviceType == 'x-www-form-urlencoded') && (action.callMethod == 'POST'))">
+								<div class="row form-group">
+									<div class="col-12">
+										<div class="table-responsive" style="padding: 10px 14px 0px 14px;">
+											<table id="data-table" class="table table-striped table-bordered">
+												<thead>
+													<tr>
+														<th style="font-size: 8pt;">Entity Key</th>
+														<th style="font-size: 8pt;">Entity Value</th>
+														<th style="font-size: 8pt;" *ngIf="action.serviceType == 'multipart/form-data'">Type</th>
+														<th></th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr class="odd gradeA" *ngFor="let requestParam of requestParamArr">
+														<td style="font-size: 8pt;">{{requestParam.entitykey}}</td>
+														<td style="font-size: 8pt;">{{requestParam.entityvalue}}</td>
+														<td style="font-size: 8pt;" *ngIf="action.serviceType == 'multipart/form-data'">{{requestParam.importType}}</td>
+														<td><a (click)="removeRequestParams(requestParam)" style="color: #ff5b57; text-decoration: none;"><i
+															class="fa fa-trash pull-right"></i></a></td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Request Body -->
+							<div class="form-group side-menu-item-space" *ngIf="action.callMethod == 'POST' && action.serviceType == 'json'">
+								<label class="col control-label side-menu-field-header">Request Body <span style="color: red">*</span></label>
+								<div class="col">
+									<label class="col control-label " style="font-size: 8pt;">Example:
+									{{requestBodySample}}</label> <input type="text" class="form-control side-menu-field-font" placeholder="Request Body" style="height: 30px;" id="url" name="entityEnglishRequestBodys" #entityEnglishRequestBodys="ngModel" [(ngModel)]="action.requestBody"
+									  (focusout)="checkArabicUrlCreateAction()" required>
+								</div>
+							</div>
+
+							<!-- Confirmation Message -->
+							<div class="col-md-12">
+								<div class="row form-group">
+									<div class="col-4">
+										<label class="col control-label " style="margin-top: 10px; font-size: 11pt;">Confirmation
+										Message</label>
+									</div>
+									<div class="col-8" style="margin-bottom: 10px;">
+										<div class="" *ngIf="enableArabicLang">
+											<tabset>
+												<div class="" style="margin-top: -28px; margin-left: 115px;">
+													<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="createActionLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+													<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!createActionLangWarning"></i>
+												</div>
+												<tab heading='English' style="border: 1px solid #d0cfcf;">
+													<div style="padding: 0px;">
+														<label style="font-size: 8pt;">Example: Are you sure that
+												 you want to make payment of #%2%# to #%4%#</label>
+														<input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageEnglish" (focusout)="checkArabicCreateAction()">
+													</div>
+												</tab>
+												<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+													<div style="padding: 0px;">
+														<label style="font-size: 8pt;">Example: Are you sure that
+												 you want to make payment of #%2%# to #%4%#</label>
+														<input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageArabic" (focusout)="checkArabicCreateAction()">
+													</div>
+												</tab>
+											</tabset>
+										</div>
+										<div class="" *ngIf="!enableArabicLang">
+											<div style="padding: 0px;">
+												<label style="font-size: 8pt;">Example: Are you sure that
+										 you want to make payment of #%2%# to #%4%#</label>
+												<input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageEnglish">
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- Response Path -->
+							<div class="col-md-12">
+								<div class="row form-group">
+									<div class="col-4">
+										<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Response Path
+									</label>
+									</div>
+									<div class="col-8" style="margin-bottom: 10px;">
+										<input type="text" class="form-control" style="font-size: 10pt;" placeholder="Response Path" name="responsePath" id="errorCode" #responsePath="ngModel" [(ngModel)]="action.responsePath">
+									</div>
+								</div>
+							</div>
+
+							<div class="col-md-12">
+								<div class=" row form-group">
+									<div class="col-4">
+										<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Action Result<span style="color: red">*</span></label>
+									</div>
+									<div class="col-8" style="margin-bottom: 10px;">
+										<div class="btn-group">
+											<label class="btn btn-info" [(ngModel)]="action.dataType" btnRadio="NUMERIC" name="numeric" tabindex="0" role="button">Number</label>
+											<label class="btn btn-info" [(ngModel)]="action.dataType" btnRadio="STRING" name="string" tabindex="0" role="button">String</label>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Success Code -->
+							<div class="col-md-12">
+								<div class="row form-group">
+									<div class="col-4">
+										<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Success Code
+									</label>
+									</div>
+									<div class="col-8" style="margin-bottom: 10px;">
+										<input type="text" class="form-control" style="font-size: 10pt;" placeholder="Success Code" name="actionSuccessCode" id="errorCode" #actionSuccessCode="ngModel" [(ngModel)]="action.successCode">
+									</div>
+								</div>
+							</div>
+							<!-- Error Node -->
+							<div class="col-md-12">
+								<div class="row form-group">
+									<div class="col-4">
+										<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Error Node
+									</label>
+									</div>
+									<div class="col-8" style="margin-bottom: 10px;">
+										<input type="text" class="form-control" style="font-size: 10pt;" placeholder="Error Code" name="errorCode" id="errorCode" #actionNode="ngModel" [(ngModel)]="action.errorCode">
+									</div>
+								</div>
+							</div>
+							<!-- Error	Responses -->
+							<div class="col-md-12 form-group">
+								<div class="form-group">
+									<label class="col control-label " style=" font-size: 11pt;">Error	Responses  </label>
+									<div class="row" *ngIf="!enableArabicLang">
+										<div class="col-md-4">
+											<input type="text" [(ngModel)]="er.code" class="form-control" style="font-size: 10pt;" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+										</div>
+										<div class="col-md-7">
+											<input type="text" [(ngModel)]="er.message" class="form-control" style="font-size: 10pt;" placeholder="Error Message" name="errorResponseMessage" id="errorResponseMessage" />
+										</div>
+										<div class="col-md-1">
+											<button id="b1" class="form-control" style="padding-bottom: 9px" [disabled]="!action.errorCode" (click)="addErrorResponse(er)" class="btn btn-md btn-primary btn-block" type="button">
+											<i class="fa fa-plus"
+												style="margin-left: -4px; margin-top: 1px;"></i>
+										</button>
+										</div>
+									</div>
+									<div class="row" style="margin-left: 34%;" *ngIf="enableArabicLang">
+										<tabset>
+											<div class="" style="margin-top: -28px; margin-left: 115px;">
+												<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateActionLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+												<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateActionLangWarning"></i>
+											</div>
+											<tab heading='English' style="border: 1px solid #d0cfcf;">
+												<div class="row" style="padding: 0px;">
+													<div class="col-4">
+														<input type="text" [(ngModel)]="er.code" class="form-control side-menu-field-font" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+													</div>
+													<div class="col-6">
+														<input type="text " [(ngModel)]="er.message" class="form-control side-menu-field-font" placeholder="Error Response" name="errorResponseMessage" id="errorResponseMessage" />
+
+													</div>
+													<div class="col-2">
+														<button id="b1" class="form-control plus-error" style="padding-left: 14px;" (click)="addErrorResponse(er)" class="btn btn-md btn-primary btn-block " [disabled]="!action.errorCode" type="button">
+															<i class="fa fa-plus"></i>
+														</button>
+													</div>
+												</div>
+											</tab>
+											<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+												<div class="row" style="padding: 0px;">
+													<div class="col-4">
+														<input type="text" [(ngModel)]="er.code" class="form-control side-menu-field-font" placeholder="Error Code" name="errorResponseMessageCode" id="errorResponseMessageCode" />
+													</div>
+													<div class="col-6">
+														<input type="text " [(ngModel)]="er.message" class="form-control side-menu-field-font" placeholder="Error Response " name="errorResponseMessage" id="errorResponseMessage" />
+
+													</div>
+													<div class="col-2">
+														<button id="b1" class="form-control plus-error" style="padding-left: 14px;" (click)="addErrorResponseArabic(er)" class="btn btn-md btn-primary btn-block " [disabled]="!action.errorCode" type="button">
+															<i class="fa fa-plus"></i>
+														</button>
+													</div>
+												</div>
+											</tab>
+										</tabset>
+									</div>
+									<div class="row" style="margin-top: 15px;">
+										<div class="col pull-right"></div>
+									</div>
+									<table id="data-table" class="table table-striped table-bordered" *ngIf="erResponses.length !=0">
+										<thead>
+											<tr>
+												<td style="font-size: 10pt; width: 33%; font-family: Helvetica Neue;">Error Code
+												</td>
+												<td style="font-size: 10pt; font-family: Helvetica Neue;">Error Message
+												</td>
+												<td style="width: 8%;"></td>
+											</tr>
+										</thead>
+										<tbody>
+											<tr class="odd gradeA" *ngFor="let er of erResponses">
+												<td style="font-size: 9pt; font-family: Helvetica Neue;">{{er.errorCode}}</td>
+												<td style="font-size: 9pt; max-width: 290px; font-family: Helvetica Neue;">{{er.errorResponse}}</td>
+												<td><a href="javascript:;" (click)="removeErrorResponse(er)" style="color: #ff5b57; text-decoration: none;"> <i
+													class="fa fa-trash pull-right"></i>
+											</a></td>
+											</tr>
+										</tbody>
+									</table>
+
+								</div>
+							</div>
+							<!-- ACION ID TABLE LIST  FOR ACION-->
+							<div class="col-md-12 form-group">
+								<div class="row">
+									<div class="col" style="background-color: white;margin-left: 8px;">
+										<table id="data-table" *ngIf="selectedActions.length != 0" class="table table-striped table-bordered">
+											<thead>
+												<tr>
+													<td>Action Name</td>
+													<td>ID</td>
+												</tr>
+											</thead>
+											<tbody>
+												<tr *ngFor="let actions of selectedActions">
+													<td>{{actions.action.name}}</td>
+													<td>{{actions.action.id}}</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-12 form-group">
+								<div class="row">
+									<div class="col" style="background-color: white;">
+										<table id="data-table" *ngIf="selectedEntitys.length != 0" class="table table-striped table-bordered">
+											<thead>
+												<tr>
+													<td>Entity Name</td>
+													<td>ID</td>
+												</tr>
+											</thead>
+											<tbody>
+												<tr *ngFor="let entitys of selectedEntitys">
+													<td>{{entitys.entity.name}}</td>
+													<td>{{entitys.entity.id}}</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+
+						</div>
+						<div class="modal-footer local-modal-footer" style="padding-right: 6px">
+							<a href="javascript:;" class="btn btn-md btn-white " style="font-size: 11pt" data-dismiss="modal" (click)="removeObject()">Cancel</a>
+							<button type="submit" class="btn btn-md btn-primary " style="font-size: 11pt; font-family: Arial;" (click)=createServiceAction(action,response) [disabled]="!actionForm.form.valid">Create</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</ng-template>
+		<!--  Create Response-->
+		<ng-template #createResponse let-c="close" let-d="dismiss">
+			<div class="modal-dialog local-modal-dialogue">
+				<div class="modal-content">
+					<form #responseForm="ngForm">
+						<div class="modal-header local-modal-content-header">
+							<h1 class="modal-title">Create Response</h1>
+						</div>
+						<div class="modal-body local-modal-content-body" *ngIf="enableArabicLang">
+							<div class="col-md-12 form-group">
+								<label class="col control-label " style="font-size: 11pt; padding-top: 10px;">Response
+								Message<span style="color: red">*</span>
+
+							</label>
+								<tabset>
+									<div class="" style="margin-top: -28px; margin-left: 115px;">
+										<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="createResponseLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+										<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!createResponseLangWarning"></i>
+									</div>
+									<tab heading='English' style="border: 1px solid #d0cfcf;">
+										<div style="padding: 0px;">
+											<tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" [(ngModel)]='resTag' name="Response" placeholder="Enter Response Message" secondaryPlaceholder="Response Message" class="side-menu-field-font" (onAdd)="addResponse($event); checkArabicCreateResponse();"
+											  (onRemove)="removeResponse($event); checkArabicCreateResponse();" [errorMessages]="errorMessages" [validators]="genValidators"></tag-input>
+										</div>
+									</tab>
+									<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+										<div style="padding: 0px;">
+											<tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" [(ngModel)]='resArabicTag' name="Response" placeholder="Enter Response Message" secondaryPlaceholder="Response Message" class="side-menu-field-font" (onAdd)="addArabicResponse($event); checkArabicCreateResponse();"
+											  (onRemove)="removeResponse($event); checkArabicCreateResponse();" [errorMessages]="arabicErrorMessages" [validators]="arabicGenValidators"></tag-input>
+										</div>
+									</tab>
+								</tabset>
+							</div>
+						</div>
+						<div class="modal-body local-modal-content-body" *ngIf="!enableArabicLang">
+							<div class="col-md-12 form-group">
+								<label class="col control-label " style="font-size: 11pt; padding-top: 10px;">Response
+								Message<span style="color: red">*</span>
+							</label>
+								<div class="col" style="padding: 0px;">
+									<tag-input theme='bootstrap' [addOnBlur]="true" [clearOnBlur]="true" [(ngModel)]='resTag' name="Response" placeholder="Enter Response Message" secondaryPlaceholder="Response Message" class="side-menu-field-font" (onAdd)="addResponse($event)" (onRemove)="removeResponse($event)" [errorMessages]="errorMessages" [validators]="genValidators"></tag-input>
+								</div>
+							</div>
+						</div>
+						<!-- ACION ID TABLE LIST  FOR ACION-->
+						<div class="col-md-12 form-group">
+							<div class="row">
+								<div class="col" style="background-color: white;margin-left: 8px;">
+									<table id="data-table" *ngIf="selectedActions.length != 0" class="table table-striped table-bordered">
+										<thead>
+											<tr>
+												<td>Action Name</td>
+												<td>ID</td>
+											</tr>
+										</thead>
+										<tbody>
+											<tr *ngFor="let actions of selectedActions">
+												<td>{{actions.action.name}}</td>
+												<td>{{actions.action.id}}</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12 form-group">
+							<div class="row">
+								<div class="col" style="background-color: white;">
+									<table id="data-table" *ngIf="selectedEntitys.length != 0" class="table table-striped table-bordered">
+										<thead>
+											<tr>
+												<td>Entity Name</td>
+												<td>ID</td>
+											</tr>
+										</thead>
+										<tbody>
+											<tr *ngFor="let entitys of selectedEntitys">
+												<td>{{entitys.entity.name}}</td>
+												<td>{{entitys.entity.id}}</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+						<div class="modal-footer local-modal-footer" style="padding-right: 6px">
+							<a href="javascript:;" class="btn btn-md btn-white " style="font-size: 11pt" data-dismiss="modal" (click)="removeObject()">Cancel</a>
+							<button type="submit" class="btn btn-md btn-primary " style="font-size: 11pt; font-family: Arial;" [disabled]="resp.length == 0" (click)=createResponses()>Create</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</ng-template>
+		<!--  Create Regular-->
+		<ng-template #regExCreateModal let-c="close" let-d="dismiss">
+			<div>
+				<div id="regExCreateModal">
+					<div class="modal-dialog local-modal-dialogue">
+						<div class="modal-content">
+							<form #regExCreateForm="ngForm" (ngSubmit)="createRegEx(regEx); regExCreateForm.reset()">
+								<div class="modal-header local-modal-content-header">
+									<h1 class="modal-title">Create Regular Expression</h1>
+
+								</div>
+								<div class="modal-body local-modal-content-body">
+									<div class="col-md-12 form-group">
+										<div class="row">
+											<div class=col-4>
+												<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Name<span
+												style="color: red">*</span></label>
+											</div>
+											<div class="col-8">
+												<input type="text" class="form-control" style="margin-top: 8px; font-size: 10pt;" placeholder="Regular Expression Name" name="regularExpressionName" id="regularExpressionName" #regularExpressionName="ngModel" [(ngModel)]="regEx.regexname" required>
+												<div *ngIf="regularExpressionName.errors && (regularExpressionName.dirty)">
+													<div [hidden]="!regularExpressionName.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Regular Expression Name required.</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div class="col-md-12 form-group">
+										<div class="row">
+											<div class=col-4>
+												<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Expression<span
+												style="color: red">*</span></label>
+											</div>
+											<div class="col-8">
+												<input type="text" class="form-control" placeholder="Regular Expression" name="regularExpression" style="margin-top: 8px; font-size: 10pt;" id="regularExpression" #regularExpression="ngModel" [(ngModel)]="regEx.expression" required>
+												<div *ngIf="regularExpression.errors && (regularExpression.dirty )">
+													<div [hidden]="!regularExpression.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Regular Expression required.</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div class="col-md-12 form-group" style="padding-bottom: 10px;">
+										<div class="row">
+											<div class=col-4>
+												<label class="col control-label" style="margin-top: 10px; font-size: 11pt;">Error
+												Message<span style="color: red">*</span>
+											</label>
+											</div>
+											<div class="col-8" *ngIf="!enableArabicLang">
+												<input type="text" class="form-control" style="margin-top: 8px; font-size: 10pt;" placeholder="Error Message" name="errorMessage" id="errorMessage" #errorMessage="ngModel" [(ngModel)]="errorMessageRegExs" required>
+												<div *ngIf="errorMessage.errors && (errorMessage.dirty)">
+													<div [hidden]="!errorMessage.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Error Message required.</div>
+												</div>
+											</div>
+											<div class="col-8" *ngIf="enableArabicLang">
+												<tabset>
+													<div class="" style="margin-top: -28px; margin-left: 115px;">
+														<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateRegexLangWarning" tooltip="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+														<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateRegexLangWarning"></i>
+													</div>
+													<tab heading='English' style="border: 1px solid #d0cfcf;">
+														<div style="padding: 0px;">
+															<input type="text" class="form-control" style="margin-top: 8px; font-size: 10pt;" placeholder="Error Message" name="errorMessage" id="errorMessage" #errorMessage="ngModel" [(ngModel)]="errorMessageRegExs" required (focusout)="checkArabicCreateRegExs()">
+															<div *ngIf="errorMessage.errors && (errorMessage.dirty)">
+																<div [hidden]="!errorMessage.errors.required" style="margin-bottom: 0; padding: 0.5rem 1.25rem" class="alert alert-danger field-error">Error Message required.
+																</div>
+															</div>
+															<!-- <input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageEnglish" (focusout)="checkArabicUpdateAction()"> -->
+														</div>
+													</tab>
+													<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+														<div style="padding: 0px;">
+															<input type="text" class="form-control" style="margin-top: 8px; font-size: 10pt;" placeholder="Error Message" name="errorMessageArabic" id="errorMessage" #errorMessageArabic="ngModel" [(ngModel)]="arabicErrorMessageRegExs">
+															<div *ngIf="errorMessageArabic.errors && (errorMessageArabic.dirty)">
+																<div [hidden]="!errorMessageArabic.errors.required" style="margin-bottom: 0; padding: 0.5rem 1.25rem" class="alert alert-danger field-error">Error Message required.
+																</div>
+															</div>
+															<!-- <input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageEnglish" (focusout)="checkArabicUpdateAction()"> -->
+														</div>
+													</tab>
+												</tabset>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="modal-footer local-modal-footer" style="padding-right: 6px">
+									<div class="">
+										<a href="javascript:;" class="btn btn-sm btn-white" style="font-size: 11pt" data-dismiss="modal" (click)="d('Cross click')">Cancel</a>
+										<button type="submit" class="btn btn-sm btn-primary" style="font-size: 11pt; font-family: Arial;" [disabled]="!regExCreateForm.form.valid">Create</button>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</ng-template>
+		<!--  Create Decision-->
+		<ng-template #createDecision let-c="close" let-d="dismiss">
+			<div class="modal-dialog local-modal-dialogue">
+				<div class="modal-content">
+					<form #responseForm="ngForm">
+						<div class="modal-header local-modal-content-header">
+							<h1 class="modal-title">Create Condition</h1>
+						</div>
+						<div class="modal-body local-modal-content-body">
+							<!-- decision view -->
+							<div class="">
+								<div class="">
+									<div class="form-group">
+										<input type="text" class="form-control " placeholder="Type your condition here" name="condition" id="condition" #condition="ngModel"  [(ngModel)]="exp" autocomplete="off" trim="blur" (ngModelChange)="validateExpression(exp)" style="height: 48px; font-size: 26px;  margin-top: 20px;">
+										<div *ngIf="condition.errors && (condition.dirty || condition.persistent)">
+											<div [hidden]="!condition.errors.required" class="alert alert-danger" style="margin-bottom: 0; padding: 0.5rem 1.25rem">Condition is required.</div>
+										</div>
+										<div *ngIf="conditions.length != 0  && showError">
+											<div class="" *ngFor="let item of conditions; let i = index">
+												<div class="list-group-item" style="margin-bottom: 0; padding: 0.5rem 1.25rem" (click)="addexpression(item.name)">{{item.name}}</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="modal-footer local-modal-footer" style="padding-right: 6px">
+							<a href="javascript:;" class="btn btn-md btn-white " style="font-size: 11pt" data-dismiss="modal" (click)="removeObject()">Cancel</a>
+							<button type="submit" class="btn btn-md btn-primary " style="font-size: 11pt; font-family: Arial;" [disabled]="!exp" (click)=createNewDecision(exp)>Create</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</ng-template>
+		<!-- verify regExs -->
+		<ng-template #modalAddRegEx let-c="close" let-d="dismiss">
+			<div class="modal-dialog local-modal-dialogue">
+				<div class="modal-content">
+					<div class="modal-header local-modal-header">
+						<h1 class="modal-title">Regular Expression Warning</h1>
+					</div>
+					<div class="modal-body local-modal-body">
+						<label class="col control-label modalcontent">This Regular Expression is used in more than one
+							Entity in this Mapping. Do you want to continue?</label>
+
+					</div>
+					<div class="modal-footer local-modal-footer">
+						<a href="javascript:;" class="btn btn-sm btn-danger" (click)="addRegEX()">Yes</a>
+						<a href="javascript:;" class="btn btn-sm btn-white" (click)="removeRegex()">No</a>
+					</div>
+				</div>
+			</div>
+		</ng-template>
+		<!--  Delete Intent-->
+		<ng-template #removeIntent let-c="close" let-d="dismiss" id="removeIntentModal">
+			<div class="modal-dialog local-modal-dialogue">
+				<div class="modal-content">
+					<div class="modal-header local-modal-header">
+						<h1 class="modal-title">Delete Intent</h1>
+					</div>
+					<div class="modal-body local-modal-body">
+						<label class="col control-label modalcontent " style="max-width: 375px;">Deleting Intent will delete all items associated in its Mappings.
+							Are you sure you want to delete this Intent?
+ 						</label>
+					</div>
+					<div class="modal-footer local-modal-footer">
+						<a href="javascript:;" class="btn btn-sm btn-danger" (click)="deleteIntents()">Yes</a> <a href="javascript:;" class="btn btn-sm btn-white" (click)="closeModal()">No</a>
+					</div>
+				</div>
+			</div>
+		</ng-template>
+		<!--  Delete Decision-->
+		<ng-template #removeDecision let-c="close" let-d="dismiss" id="removeDecisionModal">
+			<div class="modal-dialog local-modal-dialogue">
+				<div class="modal-content">
+					<div class="modal-header local-modal-header">
+						<h1 class="modal-title">Delete Condition</h1>
+					</div>
+					<div class="modal-body local-modal-body">
+						<label class="col control-label modalcontent " style="max-width: 375px;">Are you
+						sure you want to delete this Condition?
+ 						</label>
+					</div>
+					<div class="modal-footer local-modal-footer">
+						<a href="javascript:;" class="btn btn-sm btn-danger" (click)="deleteDecision()">Yes</a> <a href="javascript:;" class="btn btn-sm btn-white" (click)="closeModal()">No</a>
+					</div>
+				</div>
+			</div>
+		</ng-template>
+		<!--  Delete Entity-->
+		<ng-template #removeEntity let-c="close" let-d="dismiss" id="removeEntity">
+			<div class="modal-dialog local-modal-dialogue">
+				<div class="modal-content">
+					<div class="modal-header local-modal-header">
+						<h1 class="modal-title">Delete Entity</h1>
+					</div>
+					<div class="modal-body local-modal-body">
+						<label class="col control-label modalcontent">Are you
+						sure you want to delete this Entity?</label>
+					</div>
+					<div class="modal-footer local-modal-footer">
+						<a href="javascript:;" class="btn btn-sm btn-danger" (click)="removeEntities()" data-dismiss="modal">Yes</a> <a href="javascript:;" class="btn btn-sm btn-white" (click)="d('Cross click')">No</a>
+
+					</div>
+				</div>
+			</div>
+		</ng-template>
+		<!--  Delete Action-->
+		<ng-template #removeAction let-c="close" let-d="dismiss" id="removeActionModal">
+			<div class="modal-dialog local-modal-dialogue">
+				<div class="modal-content">
+					<div class="modal-header local-modal-header">
+						<!-- <label class="col control-label modalheading ">Delete Entity</label> -->
+						<h1 class="modal-title">Delete Action</h1>
+					</div>
+					<div class="modal-body local-modal-body">
+						<label class="col control-label modalcontent ">Are you
+						sure you want to delete this Action?</label>
+					</div>
+					<div class="modal-footer local-modal-footer">
+						<a href="javascript:;" class="btn btn-sm btn-danger" (click)="deleteSA()" data-dismiss="modal">Yes</a> <a href="javascript:;" class="btn btn-sm btn-white" (click)="d('Cross click')">No</a>
+					</div>
+				</div>
+			</div>
+		</ng-template>
+		<!--  Delete Response-->
+		<ng-template #removeResponseModal let-c="close" let-d="dismiss" id="removeResponseModal">
+			<div class="modal-dialog local-modal-dialogue">
+				<div class="modal-content">
+					<div class="modal-header local-modal-header">
+						<!-- <label class="col control-label modalheading ">Delete Entity</label> -->
+						<h1 class="modal-title">Delete Response</h1>
+					</div>
+					<div class="modal-body local-modal-body">
+						<label class="col control-label modalcontent ">Are you
+						sure you want to delete this Response?</label>
+					</div>
+					<div class="modal-footer local-modal-footer">
+						<a href="javascript:;" class="btn btn-sm btn-danger" (click)="deleteResponse()" data-dismiss="modal">Yes</a> <a href="javascript:;" class="btn btn-sm btn-white" (click)="d('Cross click')">No</a>
+					</div>
+				</div>
+			</div>
+		</ng-template>
+		<!--  Delete Mapping Link-->
+		<ng-template #removeMappingModal let-c="close" let-d="dismiss" id="removeMappingModal">
+			<div class="modal-dialog local-modal-dialogue">
+				<div class="modal-content">
+					<div class="modal-header local-modal-header">
+						<!-- <label class="col control-label modalheading ">Delete Entity</label> -->
+						<h1 class="modal-title">Delete Connector</h1>
+					</div>
+					<div class="modal-body local-modal-body">
+						<label class="col control-label modalcontent ">Deleting this connector will impact the Intent process flow. Are you sure you want to delete this Connector?
+					</label>
+					</div>
+					<div class="modal-footer local-modal-footer">
+						<a href="javascript:;" class="btn btn-sm btn-danger" (click)="removeMapping()" data-dismiss="modal">Yes</a> <a href="javascript:;" class="btn btn-sm btn-white" (click)="d('Cross click')">No</a>
+					</div>
+				</div>
+			</div>
+		</ng-template>
+		<!--  Delete Intent Mapping Link-->
+		<ng-template #removeIntentMappingModal let-c="close" let-d="dismiss" id="removeIntentMappingModal">
+			<div class="modal-dialog local-modal-dialogue">
+				<div class="modal-content">
+					<div class="modal-header local-modal-header">
+						<!-- <label class="col control-label modalheading ">Delete Entity</label> -->
+						<h1 class="modal-title">Delete Connector</h1>
+					</div>
+					<div class="modal-body local-modal-body">
+						<label class="col control-label modalcontent ">Deleting this connector will impact the Intent process flow. Are you sure you want to delete this Connector?</label>
+					</div>
+					<div class="modal-footer local-modal-footer">
+						<a href="javascript:;" class="btn btn-sm btn-danger" (click)="removeIntentMapping()" data-dismiss="modal">Yes</a>
+						<a href="javascript:;" class="btn btn-sm btn-white" (click)="d('Cross click')">No</a>
+					</div>
+				</div>
+			</div>
+		</ng-template>
+	</div>
+</div>

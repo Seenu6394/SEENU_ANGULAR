@@ -1,0 +1,23 @@
+<div class="pos-f-t fixed-top header">
+    <nav class="navbar navbar-inverse bg-inverse navbar-toggleable-md">
+        <button class="navbar-toggler navbar-toggler-right" (click)="toggleSidebar()">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="javascript:void(0)">BOT Chestra Admin</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ml-auto mt-2 mt-md-0">
+
+                <li class="nav-item dropdown" ngbDropdown>
+                    <a href="javascript:void(0)" class="nav-link" ngbDropdownToggle>
+                        Admin <b class="caret"></b>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item" style="padding-top: 10px; padding-right: 27px;" [routerLink]="['/signup']"><i class="fa fa-fw fa-user"></i> {{ 'Signup' | translate }}</a>
+                        <a class="dropdown-item" style="padding-top: 10px; padding-right: 27px;" [routerLink]="['/changepassword']"><i class="fa fa-fw fa-gear"></i> {{ 'Change Password' | translate }}</a>
+                        <a class="dropdown-item" style="padding-top: 10px; padding-right: 27px;" [routerLink]="['/login']" (click)="onLoggedout()"><i class="fa fa-fw fa-power-off"></i> {{ 'Log Out' | translate }} </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</div>

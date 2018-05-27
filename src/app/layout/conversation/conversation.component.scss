@@ -1,0 +1,41 @@
+.success {
+  color: green;
+  font-size: 20px;
+}
+
+.error {
+  color: red;
+  font-size: 20px;
+}
+
+.my-pagination /deep/ .ngx-pagination .current  {
+    padding: 0.1875rem 0.625rem;
+    background: #1b1c1d;
+    color: #fefefe;
+    cursor: default;
+    border: 0.5px solid #CCD0CD;
+}
+/*.my-tag /deep/.ng2-tag-input{
+    display: block;
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: relative;
+    transition: all 0.25s;
+    padding: 0.25rem 0;
+    min-height: 32px;
+    cursor: text;
+    border-radius: 2px;
+    border: 2px solid #dedede;
+}
+.my-tag /deep/.ng2-tag-input__text-input {
+    display: inline;
+    vertical-align: middle;
+    border: none;
+    padding: 0 0.9rem;
+    height: 38px;
+    font-size: 1em;
+    font-family: "Roboto", "Helvetica Neue", sans-serif;
+}
+.my-tag /deep/.ng2-tag-input.ng2-tag-input--focused{
+    border: 2px solid #bbbbbb;
+}*/

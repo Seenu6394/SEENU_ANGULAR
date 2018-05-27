@@ -1,0 +1,140 @@
+<!-- loading view -->
+<ngx-loading [show]="loading" [config]="{ backdropBorderRadius: '14px' }"></ngx-loading>
+<div id="content" class="content" [@routerTransition]>
+    <div class="row">
+        <div class="col-md-12 card-custom">
+            <div class="card text-white" style="height: 100%;">
+                <div class="card-body">
+                    <h4 class="card-title bg-success">Language</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="row" style="margin-bottom: 20px;">
+                                <div class="col-md-6">
+                                    <h5 style="color:black;margin-left: 60%; margin-top: 10px;">English</h5>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="round">
+                                        <input type="checkbox" id="checkboxEnglish" [(ngModel)]="enableEnglishLang" checked disabled/>
+                                        <label for="checkboxEnglish"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <input type="checkbox" value="English" [(ngModel)]="enableEnglishLang" ><br> -->
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row" style="margin-bottom: 20px;">
+                                <div class="col-md-6">
+                                    <h5 style="color:black;margin-left: 60%; margin-top: 10px;">Arabic</h5>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="round">
+                                        <input type="checkbox" id="checkbox" [(ngModel)]="enableArabicLang" (change)="updateLanguages()" />
+                                        <label for="checkbox"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <input type="checkbox" value="Arabic" [(ngModel)]="enableArabicLang" (change)="updateLanguages()" checked><br> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 card-custom" *ngIf="!enableArabicLang">
+            <div class="card text-white">
+                <div class="card-body">
+                    <h4 class="card-title bg-success">Filler Keywords</h4>
+                    <div class="">
+                        <tag-input theme='bootstrap' placeholder="Enter Filler Keywords" [errorMessages]="errorMessages" [validators]="validators" [onAdding]="changeTagOnAdding" [allowDupes]="false" [(ngModel)]='fillerKeys' name="fillerKeywords" secondaryPlaceholder="Enter Filler Keywords" [addOnBlur]="true" [clearOnBlur]="true" (onAdd)="createFillerKeyword($event)"
+                          (onRemove)="sliceKeywordFromList($event)" #tagInput></tag-input>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 card-custom" *ngIf="enableArabicLang">
+            <div class="card text-white">
+                <div class="card-body">
+                    <h4 class="card-title bg-success">Filler Keywords</h4>
+                    <tabset>
+                        <div class="" style="margin-top: -28px; margin-left: 115px;">
+                            <i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateFillerLangWarning" popover="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+                            <i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateFillerLangWarning"></i>
+                        </div>
+                        <tab heading='English' style="border: 1px solid #d0cfcf;">
+                            <div style="padding: 0px;">
+                                <tag-input theme='bootstrap' placeholder="Enter Filler Keywords" [onAdding]="changeTagOnAdding" [errorMessages]="errorMessages" [validators]="validators" [allowDupes]="false" [(ngModel)]='fillerKeys' name="fillerKeywords" secondaryPlaceholder="Enter Filler Keywords" [addOnBlur]="true" [clearOnBlur]="true" (onAdd)="createFillerKeyword($event); checkArabicUpdateFiller();"
+                                  (onRemove)="sliceKeywordFromList($event); checkArabicUpdateFiller(); " #tagInput></tag-input>
+                            </div>
+                        </tab>
+                        <tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+                            <div style="padding: 0px;">
+                                <tag-input theme='bootstrap' placeholder="Enter Filler Keywords" [errorMessages]="arabicErrorMessages" [validators]="arabicValidators" [allowDupes]="false" [(ngModel)]='arabicFillerKeys' name="fillerKeywords" secondaryPlaceholder="Enter Filler Keywords" [addOnBlur]="true" [clearOnBlur]="true" (onAdd)="createArabicFillerKeyword($event); checkArabicUpdateFiller();"
+                                  (onRemove)="sliceKeywordFromList($event); checkArabicUpdateFiller();" #tagInput></tag-input>
+                            </div>
+                        </tab>
+                    </tabset>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 card-custom" *ngIf="!enableArabicLang">
+            <div class="card text-white">
+                <div class="card-body">
+                    <h4 class="card-title bg-success">Cancel  Keywords</h4>
+                    <div class="">
+                        <tag-input theme='bootstrap' placeholder="Enter Cancel Keywords" [onAdding]="changeTagOnAdding" [allowDupes]="false" [(ngModel)]='cancelKeys' name="fillerKeywords" secondaryPlaceholder="Enter Cancel Keywords" [addOnBlur]="true" [clearOnBlur]="true" (onAdd)="createCancelKeyword($event)"
+                          (onRemove)="sliceKeywordFromList($event)" #tagInput></tag-input>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 card-custom" *ngIf="enableArabicLang">
+            <div class="card text-white">
+                <div class="card-body">
+                    <h4 class="card-title bg-success">Cancel Keywords</h4>
+                    <tabset>
+                        <div class="" style="margin-top: -28px; margin-left: 115px;">
+                            <i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateCancelLangWarning" popover="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+                            <i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateCancelLangWarning"></i>
+                        </div>
+                        <tab heading='English' style="border: 1px solid #d0cfcf;">
+                            <div style="padding: 0px;">
+                                <tag-input theme='bootstrap' placeholder="Enter Cancel Keywords" [onAdding]="changeTagOnAdding" [allowDupes]="false" [errorMessages]="errorMessages" [validators]="validators" [(ngModel)]='cancelKeys' name="fillerKeywords" secondaryPlaceholder="Enter Cancel Keywords" [addOnBlur]="true" [clearOnBlur]="true" (onAdd)="createCancelKeyword($event) "
+                                  (onRemove)="sliceKeywordFromList($event)" #tagInput></tag-input>
+                            </div>
+                        </tab>
+                        <tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+                            <div style="padding: 0px;">
+                                <tag-input theme='bootstrap' placeholder="Enter Cancel Keywords" [allowDupes]="false" [errorMessages]="arabicErrorMessages" [validators]="arabicValidators" [(ngModel)]='arabicCancelKeys' name="fillerKeywords" secondaryPlaceholder="Enter Cancel Keywords" [addOnBlur]="true" [clearOnBlur]="true" (onAdd)="createArabicCancelKeyword($event); checkArabicUpdateCancel()"
+                                  (onRemove)="sliceKeywordFromList($event); checkArabicUpdateCancel()" #tagInput></tag-input>
+                            </div>
+                        </tab>
+                    </tabset>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-6">
+                </div>
+                <div class="col-md-6">
+                    <div class="row">
+                      <div class="col-md-6" align="right">
+                      </div>
+                      <div class="col-md-6">
+                        <div class="row">
+                          <div class="col-6" align="right">
+                            <label for="file-inputs">
+                                <a class="btn btn-success pull-right btn-lg" style="color: white; margin-top: 20px; font-size: 18px;"> Import </a>
+                            </label>
+                            <input type="file" onclick="this.value = null" (change)="fileUploaderSettings($event)" class="file-inputs hide" accept=".settings" name="file-inputs" hidden id="file-inputs">
+                          </div>
+                          <div class="col-6" align="right">
+                              <a (click)="exportSettings()" class="btn btn-success btn-lg" style="color: white; margin-top: 20px; font-size: 18px;"> <span>Export</span> </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

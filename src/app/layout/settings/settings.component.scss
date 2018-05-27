@@ -1,0 +1,67 @@
+.success {
+    color: green;
+    font-size: 20px;
+}
+
+.error {
+    color: red;
+    font-size: 20px;
+}
+
+.card-title {
+    margin-bottom: 0.75rem;
+    background-color: #e2e2e2;
+    padding: 8px;
+    font-size: 18px;
+}
+
+.card-custom {
+    margin-top: 0.75rem;
+}
+
+.round {
+    position: relative;
+}
+
+.round label {
+    background-color: #fff;
+    border: 2px solid #ccc;
+    border-radius: 15%;
+    cursor: pointer;
+    height: 40px;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 40px;
+}
+
+.round label:after {
+    border: 2px solid #3672a7;
+    border-top: none;
+    border-right: none;
+    content: "";
+    height: 9px;
+    left: 7px;
+    opacity: 0;
+    position: absolute;
+    top: 12px;
+    transform: rotate(-45deg);
+    width: 23px;
+}
+
+.round input[type="checkbox"] {
+    visibility: hidden;
+}
+
+.round input[type="checkbox"]:checked + label {
+    background-color: #d0cfcf6b;
+    border-color: #97b9d6;
+}
+
+.round input[type="checkbox"]:checked + label:after {
+    opacity: 1;
+}
+
+::ng-deep .popover {
+    color: #000 !important;
+}

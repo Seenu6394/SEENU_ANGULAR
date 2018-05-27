@@ -1,0 +1,96 @@
+.success {
+  color: green;
+  font-size: 20px;
+}
+
+.error {
+  color: red;
+  font-size: 20px;
+}
+.entry-field{
+	 margin-top: 8px; font-size: 10pt; 
+}
+
+.field-error{
+	margin-bottom:0;
+	padding: 0.5rem 1.25rem;
+}
+.my-pagination /deep/ .ngx-pagination .current  {
+    padding: 0.1875rem 0.625rem;
+    background: #1b1c1d;
+    color: #fefefe;
+    cursor: default;
+    border: 0.5px solid #CCD0CD;
+}
+/*.my-tag /deep/.ng2-tag-input{
+    display: block;
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: relative;
+    transition: all 0.25s;
+    padding: 0.25rem 0;
+    min-height: 32px;
+    cursor: text;
+    border-radius: 2px;
+    border: 2px solid #dedede;
+}
+.my-tag /deep/.ng2-tag-input__text-input {
+    display: inline;
+    vertical-align: middle;
+    border: none;
+    padding: 0 0.9rem;
+    height: 38px;
+    font-size: 1em;
+    font-family: "Roboto", "Helvetica Neue", sans-serif;
+}
+.my-tag /deep/.ng2-tag-input.ng2-tag-input--focused{
+    border: 2px solid #bbbbbb;
+}*/
+
+
+.modalcontent {
+  
+    font-size: 14px;
+   
+}
+
+.local-modal-dialogue{
+	
+	margin-top:0;
+	margin-bottom:0; 
+	margin:8px;
+}
+
+.local-modal-header{
+	margin-left:0;
+	padding-bottom: 0; 
+	padding-left: 5px; 
+	padding-top: 5px;
+}
+
+.local-modal-body{ 
+	 padding-top: 10px;  
+	 padding-left: 10px;
+	 padding-right: 35px; 
+	 padding-bottom: 35px;
+}
+
+.local-modal-footer{ 
+	 padding-top: 8px;
+	 padding-bottom: 3px;
+}
+
+
+
+.local-modal-content-body{
+	padding-bottom: 0;
+	padding-top: 0;
+}
+
+.local-modal-content-header{
+	
+	 padding-right: 350px;
+	 margin-left: 0; 
+	 padding-top: 7px; 
+	 padding-bottom: 6px;
+}

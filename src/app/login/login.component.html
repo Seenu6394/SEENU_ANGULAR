@@ -1,0 +1,41 @@
+<div class="login-page" [@routerTransition]>
+  <ngx-loading [show]="loading" [config]="{ backdropBorderRadius: '14px' }"></ngx-loading>
+    <div class="row">
+        <div class="col-md-4 push-md-4">
+            <img src="assets/images/logo.png" width="250px"  />
+            <!-- <h1>BOTchestra Admin</h1> -->
+            <form #f="ngForm"(ngSubmit)="f.form.valid && onLoggedin(user)" #f="ngForm" class="margin-bottom-0" style="margin-top: 20%;">
+              <div class="form-group m-b-20">
+                  <input  placeholder="Email" type="text" class="form-control input-underline input-lg" name="email"   [(ngModel)]="user.email" #email="ngModel" required />
+                  <!-- <div *ngIf="email.errors && (email.touched)"> ngModel email="true"
+                    <div [hidden]="!email.errors.required"
+                      class="alert alert-danger">Email required.</div>
+                  </div> -->
+              </div>
+              <div class="form-group m-b-20">
+                  <input class="form-control input-underline input-lg" placeholder="Password" type="password" name="password" [(ngModel)]="user.password" #password="ngModel" required/>
+              </div>
+              <div class="row">
+                <div class="col-6" align="left">
+                  <!-- <label style="padding-right: 5%;">
+                      <input type="checkbox" /> Remember Me
+                  </label> -->
+                </div>
+                <div class="col-6"  align="right">
+                  <!-- <a style="color: #fff"[routerLink]="['/fp']" [routerLinkActive]="['router-link-active']">
+                    Forgot Password
+                  </a> -->
+                </div>
+              </div>
+              <div class="row">
+                  <div class="col-12" style="margin-top: 20px;">
+                      <div class="login-buttons">
+                        <button type="submit" [disabled]="!f.form.valid" class="btn btn-success btn-block" style="font-size:18px;">Sign In</button>
+                      </div>
+                  </div>
+              </div>
+
+          </form>
+        </div>
+    </div>
+</div>

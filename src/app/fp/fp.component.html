@@ -1,0 +1,30 @@
+<div class="login-page" [@routerTransition]>
+    <div class="row">
+        <div class="col-md-4 push-md-4">
+            <img src="assets/images/logo.png" width="150px" class="user-avatar" />
+            <h1>BOTchestra Admin</h1>
+            <form name="form" (ngSubmit)="f.form.valid && forgotPassword(user)" #f="ngForm" class="margin-bottom-0">
+              <div class="form-group m-b-20">
+                  <input  placeholder="Please Enter your Email" type="email" class="form-control input-underline input-lg" name="email"   [(ngModel)]="user.email" #email="ngModel" required ngModel email="true" />
+                  <div *ngIf="email.errors && (email.touched)">
+                    <div [hidden]="!email.errors.required"
+                      class="alert alert-danger">Email required.</div>
+                  </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="login-buttons">
+                      <button [routerLink]="['/login']" [routerLinkActive]="['router-link-active']" class="btn btn-block">Cancel</button>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="login-buttons">
+                      <button type="submit" [disabled]="!f.form.valid" class="btn btn-success btn-block">Submit</button>
+                  </div>
+                </div>
+              </div>
+
+          </form>
+        </div>
+    </div>
+</div>

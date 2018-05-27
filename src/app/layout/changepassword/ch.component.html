@@ -1,0 +1,36 @@
+<div class="login-page" style="    margin-top: 12%;" [@routerTransition]>
+    <div class="row">
+        <div class="col-md-4 push-md-4">
+            <form name="form" (ngSubmit)="f.form.valid && changePassword(user)" #f="ngForm" class="margin-bottom-0">
+                <div class="form-group m-b-20">
+                    <input placeholder="Current password" type="password" class="form-control" name="email" [(ngModel)]="user.oldpassword" #password="ngModel" required />
+                </div>
+                <div class="form-group">
+                    <input type="password" placeholder="New password" class="form-control" id="password" required [(ngModel)]="user.password" name="password" #password="ngModel">
+                    <div [hidden]="password.valid || password.pristine" class="alert alert-danger">
+                        Password is required
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="password" placeholder="Confirm password" class="form-control" id="confirmPassword" required validateEqual="password" [(ngModel)]="user.confirmPassword" name="confirmPassword" #confirmPassword="ngModel">
+                    <div [hidden]="confirmPassword.valid || confirmPassword.pristine" class="alert alert-danger">
+                        Passwords did not match
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="login-buttons">
+                            <button [routerLink]="['/dashboard']" [routerLinkActive]="['router-link-active']" class="btn btn-block">Cancel</button>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="login-buttons">
+                            <button type="submit" [disabled]="!f.form.valid" class="btn btn-success btn-block">Change Password</button>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

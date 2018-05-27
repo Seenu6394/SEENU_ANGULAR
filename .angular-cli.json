@@ -1,0 +1,74 @@
+{
+    "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+    "project": {
+        "name": "SCS Admin"
+    },
+    "apps": [
+        {
+            "root": "src",
+            "outDir": "dist",
+            "assets": [
+                "assets",
+                "favicon.ico",
+                ".htaccess"
+            ],
+            "index": "index.html",
+            "main": "main.ts",
+            "polyfills": "polyfills.ts",
+            "test": "test.ts",
+            "tsconfig": "tsconfig.app.json",
+            "testTsconfig": "tsconfig.spec.json",
+            "prefix": "app",
+            "styles": [
+                "../node_modules/font-awesome/css/font-awesome.css",
+                "../node_modules/ng2-toastr/bundles/ng2-toastr.min.css",
+                "../node_modules/ngx-chips/dist/modules/core/styles/core/_core.scss",
+                "styles/app.scss",
+                "styles/font-awesome-animation.min.css"
+
+            ],
+            "scripts": [
+                "../node_modules/jquery/dist/jquery.min.js",
+                "../node_modules/jquery-ui-dist/jquery-ui.min.js",
+                "../node_modules/bootstrap/dist/js/bootstrap.min.js",
+                "../node_modules/ng2-toastr/bundles/ng2-toastr.min.js"
+            ],
+            "environmentSource": "environments/environment.ts",
+            "environments": {
+                "dev": "environments/environment.ts",
+                "prod": "environments/environment.prod.ts",
+                "prod1": "environments/environment.prod1.ts",
+                "prod2": "environments/environment.prod2.ts",
+                "prod3": "environments/environment.prod3.ts",
+                "stg": "environments/environment.stg.ts",
+                "uat": "environments/environment.uat.ts",
+                "uat2": "environments/environment.uat2.ts"
+            }
+        }
+    ],
+    "e2e": {
+        "protractor": {
+            "config": "./protractor.conf.js"
+        }
+    },
+    "lint": [
+        {
+            "project": "src/tsconfig.app.json"
+        },
+        {
+            "project": "src/tsconfig.spec.json"
+        },
+        {
+            "project": "e2e/tsconfig.e2e.json"
+        }
+    ],
+    "test": {
+        "karma": {
+            "config": "./karma.conf.js"
+        }
+    },
+    "defaults": {
+        "styleExt": "scss",
+        "component": {}
+    }
+}

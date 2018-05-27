@@ -1,0 +1,448 @@
+<ngx-loading [show]="loading" [config]="{ backdropBorderRadius: '14px' }"></ngx-loading>
+<!-- begin #content -->
+<div id="content" class="content">
+	<div class="row">
+		<div class="col-md-6">
+			<h1 class="page-header">Regular Expression</h1>
+		</div>
+		<div class="col-md-6">
+			<a (click)="addRegEx(modalcreate)" style="color: white; margin-bottom: 10px;" data-toggle="modal" class="btn btn-success m-r-5 pull-right"> <i class="fa fa-plus"
+				style="margin-right: 10px; color: white;"></i>Create New RegEx
+			</a>
+		</div>
+	</div>
+	<!-- end page-header -->
+	<!-- begin row -->
+	<div class="row">
+		<!-- begin col-12 -->
+		<div class="col-md-12">
+			<!-- begin panel -->
+			<div class="panel panel-inverse">
+				<div class="panel-body">
+					<div class="table-responsive">
+						<div class="row">
+							<div class="col-md-8">
+
+							</div>
+							<div class="col-md-4 pull-right" style="margin-bottom: 10px;">
+								<div class="input-group" align="right">
+									<input type="text" class="form-control" placeholder="Regular Expressions" [(ngModel)]="searchValue">
+									<div class="input-group-btn">
+										<button type="button" class="btn btn-success">
+											<i class="fa fa-search" aria-hidden="true"></i>
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+						<table id="data-table" class="table table-striped table-bordered">
+							<thead>
+								<tr>
+									<th>Regular Name</th>
+									<th>Regular Expression</th>
+									<th>Error Message</th>
+									<th>Mapped Intents</th>
+									<th>Delete</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr class="odd gradeA" *ngFor="let regex of regExLst| RegExFilterPipe:searchValue | paginate: { itemsPerPage: noItemsPerPage , currentPage: p , totalItems: nototalItems} ">
+									<td><a style=" color: cornflowerblue;" href="" onclick="return false;" (click)="editRegEx( modalupdate, modalUpdateRegexs, regex, regex.intents)" align="center"> {{regex.regexname}}</a></td>
+									<td>{{regex.expression}}</td>
+									<td>
+										<div class="" *ngFor="let re of regex.regexes">
+											<span *ngIf="re.localeCode =='en'"> <span style="color:cornflowerblue;  padding-right: 10px;"> English:</span> {{re.errorMessage}}</span>
+											<span *ngIf="re.localeCode =='ar'"> <span style="color:cornflowerblue;  padding-right: 10px;"> Arabic:</span> {{re.errorMessage}}</span>
+										</div>
+									</td>
+									<td>
+										<span *ngFor="let intent of regex.intents; let i = index">
+											<a>{{intent.name}} <span *ngIf="regex.intents.length != i+1 ">,</span> </a>
+										</span>
+									</td>
+									<td><a (click)="setIdToBeDeleted(modaldelete,modalwarning,regex.id,regex.intents)" data-toggle="modal" style="color: #ff5b57; text-decoration: none;"> <i
+											class="fa fa-trash pull-right" aria-hidden="true"
+											style="margin-right: 50%"></i>
+									</a></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div id="data-table_wrapper" class="dataTables_wrapper  dt-bootstrap no-footer">
+						<div class="row" style="width: 100%;">
+							<div class="col-4" align="left">
+								<div class="dataTables_length" id="data-table_length">
+									<label>Showing <select name="data-table_length"
+										[(ngModel)]="noItemsPerPage" aria-controls="data-table"
+										 style="margin-left: 5px;">
+											<option value="5">
+                      5
+                    </option>
+											<option value="10">
+                      10
+                    </option>
+											<option value="20">
+                      20
+                    </option>
+											<option value="50">
+                      50
+                    </option>
+
+									</select> &nbsp; Entries
+									</label>
+								</div>
+							</div>
+							<div class="col-8">
+								<div align="right">
+									<pagination-controls class="my-pagination" (pageChange)=" p = $event"></pagination-controls>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<!-- end panel -->
+			</div>
+			<!-- end col-12 -->
+		</div>
+		<!-- end row -->
+		<div class="row">
+			<!-- create Re -->
+			<ng-template #modalcreate let-c="close" let-d="dismiss">
+					<div id="regExCreateModal">
+				<div class="modal-dialog local-modal-dialogue">
+					<div class="modal-content">
+						<form #regExCreateForm="ngForm"
+							(ngSubmit)="createRegEx(regEx); regExCreateForm.reset()">
+							<div class="modal-header local-modal-content-header">
+								<h1 class="modal-title">Create Regular Expression</h1>
+							</div>
+							<div class="modal-body local-modal-content-body">
+								<div class="col-md-12 form-group">
+									<div class="row">
+										<div class=col-4>
+											<label class="col control-label"
+												style="margin-top: 10px; font-size: 11pt;">Name<span
+												style="color: red">*</span></label>
+										</div>
+										<div class="col-8">
+											<input type="text" class="form-control entry-field"
+												placeholder="Regular Expression Name"
+												name="regularExpressionName" id="regularExpressionName"
+												#regularExpressionName="ngModel"
+												[(ngModel)]="regEx.regexname" required>
+											<div
+												*ngIf="regularExpressionName.errors && (regularExpressionName.dirty)">
+												<div [hidden]="!regularExpressionName.errors.required"
+													style="margin-bottom: 0; padding: 0.5rem 1.25rem"
+													class="alert alert-danger field-error">Regular
+													Expression Name required.</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="col-md-12 form-group">
+									<div class="row">
+										<div class=col-4>
+											<label class="col control-label"
+												style="margin-top: 10px; font-size: 11pt;">Expression<span
+												style="color: red">*</span></label>
+										</div>
+										<div class="col-8">
+											<input type="text" class="form-control"
+												style="margin-top: 8px; font-size: 10pt;"
+												placeholder="Regular Expression" name="regularExpression"
+												id="regularExpression" #regularExpression="ngModel"
+												[(ngModel)]="regEx.expression" required>
+											<div
+												*ngIf="regularExpression.errors && (regularExpression.dirty )">
+												<div [hidden]="!regularExpression.errors.required"
+													style="margin-bottom: 0; padding: 0.5rem 1.25rem"
+													class="alert alert-danger field-error">Regular
+													Expression required.</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="col-md-12 form-group">
+									<div class="row">
+										<div class=col-4>
+											<label class="col control-label"
+												style="margin-top: 10px; font-size: 11pt;">Error
+												Message<span style="color: red">*</span>
+											</label>
+										</div>
+										<div class="col-8" *ngIf="!enableArabicLang">
+											<input type="text" class="form-control"
+												style="margin-top: 8px; font-size: 10pt;"
+												placeholder="Error Message" name="errorMessage"
+												id="errorMessage" #errorMessage="ngModel"
+												[(ngModel)]="errorMessageRegExs" required>
+											<div
+												*ngIf="errorMessage.errors && (errorMessage.dirty)">
+												<div [hidden]="!errorMessage.errors.required"
+													style="margin-bottom: 0; padding: 0.5rem 1.25rem"
+													class="alert alert-danger field-error">Error Message
+													required.</div>
+											</div>
+										</div>
+										<div class="col-8" *ngIf="enableArabicLang">
+											<tabset>
+												<div class="" style="margin-top: -28px; margin-left: 115px;">
+													<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateRegexLangWarning" popover="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+													<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateRegexLangWarning"></i>
+												</div>
+												<tab heading='English' style="border: 1px solid #d0cfcf;">
+													<div style="padding: 0px;">
+														<input type="text" class="form-control"
+															style="margin-top: 8px; font-size: 10pt;"
+															placeholder="Error Message" name="errorMessage"
+															id="errorMessage" #errorMessage="ngModel"
+															[(ngModel)]="errorMessageRegExs" required (focusout)="checkArabicCreateRegExs()">
+														<div *ngIf="errorMessage.errors && (errorMessage.dirty)">
+															<div [hidden]="!errorMessage.errors.required"
+																style="margin-bottom: 0; padding: 0.5rem 1.25rem"
+																class="alert alert-danger field-error">Error Message
+																required.</div>
+														</div>
+														<!-- <input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageEnglish" (focusout)="checkArabicUpdateAction()"> -->
+													</div>
+												</tab>
+												<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+													<div style="padding: 0px;">
+														<input type="text" class="form-control"
+															style="margin-top: 8px; font-size: 10pt;"
+															placeholder="Error Message" name="errorMessage"
+															id="errorMessage" #errorMessage="ngModel"
+															[(ngModel)]="arabicErrorMessageRegExs" (focusout)="checkArabicCreateRegExs()" pattern="^(?:[0-9\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDCF\uFDF0-\uFDFF\uFE70-\uFEFF]|(?:\uD802[\uDE60-\uDE9F]|\uD83B[\uDE00-\uDEFF])){0,50}$">
+														<div *ngIf="errorMessage.errors && (errorMessage.dirty)">
+															<div [hidden]="!errorMessage.errors.required"
+																style="margin-bottom: 0; padding: 0.5rem 1.25rem"
+																class="alert alert-danger field-error">Error Message
+																required.</div>
+																<div [hidden]="!errorMessage.errors.pattern"
+																	style="margin-bottom: 0; padding: 0.5rem 1.25rem"
+																	class="alert alert-danger field-error">Arabic Characters Expected.</div>
+														</div>
+														<!-- <input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageEnglish" (focusout)="checkArabicUpdateAction()"> -->
+													</div>
+												</tab>
+											</tabset>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer local-modal-footer"
+								style="padding-right: 6px">
+								<div class="">
+									<a href="javascript:;" class="btn btn-md btn-white "
+										style="font-size: 11pt" data-dismiss="modal"
+										(click)="d('Cross click')">Cancel</a>
+									<button type="submit" class="btn btn-md btn-primary "
+										style="font-size: 11pt; font-family: Arial;"
+										[disabled]="!regExCreateForm.form.valid">Create</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+			</ng-template>
+
+			<!--  Update -->
+			<ng-template #modalupdate let-c="close" let-d="dismiss">
+			<div id="regExUpdateModal">
+				<div class="modal-dialog local-modal-dialogue">
+					<div class="modal-content">
+						<form #regUpdateForm="ngForm"
+							(ngSubmit)="updateRegExMethod(updateRegEx); regUpdateForm.reset()">
+							<div class="modal-header local-modal-content-header">
+								<h1 class="modal-title">Update Regular Expression</h1>
+							</div>
+							<div class="modal-body local-modal-content-body">
+								<div class="col-md-12 form-group">
+									<div class="row">
+										<div class=col-4>
+											<label class="col control-label"
+												style="margin-top: 10px; font-size: 11pt;">Name</label>
+										</div>
+										<div class="col-8">
+											<input type="text" class="form-control entry-field"
+												placeholder="Regular Expression Name"
+												name="regularExpressionName" id="regularExpressionName"
+												#regularExpressionName="ngModel"
+												[(ngModel)]="updateRegEx.regexname" required>
+											<div
+												*ngIf="regularExpressionName.errors && (regularExpressionName.dirty )">
+												<div [hidden]="!regularExpressionName.errors.required"
+													class="alert alert-danger field-error">Regular
+													Expression Name required.</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12 form-group">
+									<div class="row">
+										<div class=col-4>
+											<label class="col control-label"
+												style="margin-top: 10px; font-size: 11pt;">Expression</label>
+										</div>
+										<div class="col-8">
+											<input type="text" class="form-control entry-field"
+												placeholder="Regular Expression" name="regularExpression"
+												id="regularExpression" #updateRegExpression="ngModel"
+												[(ngModel)]="updateRegEx.expression" required>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12 form-group">
+									<div class="row">
+										<div class=col-4>
+											<label class="col control-label"
+												style="margin-top: 10px; font-size: 11pt;">Error
+												Message</label>
+										</div>
+										<div class="col-8" *ngIf="!enableArabicLang">
+											<input type="text" class="form-control entry-field"
+												placeholder="Error Message" name="updateErrorMessage"
+												id="updateErrorMessage" #updateErrorMessage="ngModel"
+												[(ngModel)]="updateErrorMessageRegExs" required>
+										</div>
+										<div class="col-8" *ngIf="enableArabicLang">
+											<tabset>
+												<div class="" style="margin-top: -28px; margin-left: 115px;">
+													<i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900;" *ngIf="updateRegexLangWarning" popover="Some Contents is Missing in Arabic" triggers="mouseenter:mouseleave"></i>
+													<i class="fa  fa-exclamation-triangle fa-2x" aria-hidden="true" style="margin-bottom: 5px; color: #fd7900; opacity: 0" *ngIf="!updateRegexLangWarning"></i>
+												</div>
+												<tab heading='English' style="border: 1px solid #d0cfcf;">
+													<div style="padding: 0px;">
+														<input type="text" class="form-control"
+															style="margin-top: 8px; font-size: 10pt;"
+															placeholder="Error Message" name="errorMessage"
+															id="errorMessage" #errorMessage="ngModel"
+															[(ngModel)]="updateErrorMessageRegExs" required (focusout)="checkArabicUpdateRegExs()">
+														<div *ngIf="errorMessage.errors && (errorMessage.dirty)">
+															<div [hidden]="!errorMessage.errors.required"
+																style="margin-bottom: 0; padding: 0.5rem 1.25rem"
+																class="alert alert-danger field-error">Error Message
+																required.</div>
+														</div>
+														<!-- <input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageEnglish" (focusout)="checkArabicUpdateAction()"> -->
+													</div>
+												</tab>
+												<tab heading='Arabic' style="border: 1px solid #d0cfcf;">
+													<div style="padding: 0px;">
+														<input type="text" class="form-control"
+															style="margin-top: 8px; font-size: 10pt;"
+															placeholder="Error Message" name="errorMessageArabic"
+															id="errorMessage" #errorMessageArabic="ngModel" (focusout)="checkArabicUpdateRegExs()"
+															[(ngModel)]="arabicUpdateErrorMessageRegExs" pattern="^(?:[0-9\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDCF\uFDF0-\uFDFF\uFE70-\uFEFF]|(?:\uD802[\uDE60-\uDE9F]|\uD83B[\uDE00-\uDEFF])){0,50}$">
+														<div *ngIf="errorMessageArabic.errors && (errorMessageArabic.dirty)">
+															<div [hidden]="!errorMessageArabic.errors.required"
+																style="margin-bottom: 0; padding: 0.5rem 1.25rem"
+																class="alert alert-danger field-error">Error Message
+																required.</div>
+																<div [hidden]="!errorMessageArabic.errors.pattern"
+																	style="margin-bottom: 0; padding: 0.5rem 1.25rem"
+																	class="alert alert-danger field-error">Arabic Characters Expected.</div>
+														</div>
+														<!-- <input type="text" class="form-control" style="font-size: 10pt;" placeholder="Confirmation Message" name="confirmMessage" id="confirmMessage" [(ngModel)]="actionConfirmMessageEnglish" (focusout)="checkArabicUpdateAction()"> -->
+													</div>
+												</tab>
+											</tabset>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="modal-footer local-modal-footer"
+								style="padding-right: 6px">
+								<a href="javascript:;" class="btn btn-sm btn-white"
+									style="font-size: 11pt" data-dismiss="modal"
+									(click)="d('Cross click')">Cancel</a>
+								<button type="submit" class="btn btn-sm btn-primary"
+									style="font-size: 11pt; font-family: Arial;"
+									[disabled]="!regUpdateForm.form.valid">Update</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+			</ng-template>
+		</div>
+	</div>
+	<div class="row">
+		<ng-template #modaldelete let-c="close" let-d="dismiss">
+		<div class="modal-dialog local-modal-dialogue">
+			<div class="modal-content">
+				<div class="modal-header local-modal-header">
+					<!-- <label class="col control-label modalheading ">Delete Entity</label> -->
+					<h1 class="modal-title" style="font-size: 1.1rem;">Delete Regular Expression</h1>
+				</div>
+				<div class="modal-body local-modal-body">
+					<label class="col control-label modalcontent ">Are you sure
+						you want to delete this Regular Expression? </label>
+
+				</div>
+				<div class="modal-footer local-modal-footer">
+				<a href="javascript:;" class="btn btn-sm btn-danger"
+						(click)="deleteRe(idToBeDeleted)" data-dismiss="modal">Yes</a>
+					<a href="javascript:;" class="btn btn-sm btn-white"
+						data-dismiss="modal" (click)="d('Cross click')">No</a>
+
+				</div>
+			</div>
+		</div>
+		</ng-template>
+	</div>
+
+
+	<div class="row">
+		<ng-template #modalwarning let-c="close" let-d="dismiss">
+		<div class="modal-dialog local-modal-dialogue">
+			<div class="modal-content">
+				<div class="modal-header local-modal-header">
+					<!-- <label class="col control-label modalheading ">Delete Entity</label> -->
+					<h1 class="modal-title">OOPS ! We cant delete Regular Expression</h1>
+				</div>
+				<div class="modal-body local-modal-body">
+					<label class="col control-label modalcontent ">Regular expression is mapped with Intents. </label>
+
+				</div>
+				<div class="modal-footer local-modal-footer">
+				<a href="javascript:;" class="btn btn-sm btn-primary"
+						(click)="d('Cross click')" data-dismiss="modal">ok</a>
+				</div>
+			</div>
+		</div>
+		</ng-template>
+	</div>
+
+	<div class="row">
+		<ng-template #modalUpdateRegexs let-c="close" let-d="dismiss">
+		<div class="modal-dialog local-modal-dialogue">
+			<div class="modal-content">
+				<div class="modal-header local-modal-header">
+					<!-- <label class="col control-label modalheading ">Delete Entity</label> -->
+					<h1 class="modal-title">Update Regular Expression</h1>
+				</div>
+				<div class="modal-body local-modal-body">
+					<label class="col control-label modalcontent ">This Regular Expression is used in more than one Mapping.
+					Updating will impact all Mapping </label>
+
+				</div>
+				<div class="modal-footer local-modal-footer">
+					<a href="javascript:;" class="btn btn-sm btn-white"
+							(click)="d('Cross click')" data-dismiss="modal">Cancel</a>
+				<a href="javascript:;" class="btn btn-sm btn-danger"
+						(click)="updateRegExsModal(modalupdate)" data-dismiss="modal">OK</a>
+				</div>
+			</div>
+		</div>
+		</ng-template>
+	</div>
+
+	<a href="javascript:;" class="btn btn-icon btn-circle btn-success btn-scroll-to-top fade" data-click="scroll-top"> <i class="fa fa-angle-up"></i>
+	</a>
+</div>
